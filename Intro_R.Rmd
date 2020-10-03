@@ -40,11 +40,44 @@ Working with random variables (basic concepts)
 ```{r}
 x = rnorm(50)  #creates a vector of 50 values from a standard normal distribution
 y = x + rnorm(50,mean=50,sd=.1) #we add extract random variables from a distribution with a specific shape (specific mean and std deviation)
-
-
+#Use set.seed(3)-->thave same random variables (with same length vector)
+var(y)
+mean(y)
+sd(y) # =sqrt(var(y))
 ```
+Working with graphics
+```{r}
+x = rnorm(100)
+y = rnorm(100)
+jpeg("FiguraTest.jpeg")  #We create a jpeg of the plot
+plot(x,y,xlab="this is the x-axis",ylab="this is the y-axis",main="PLot of X vs Y")
+dev.off()
+```
+More sophisticate plot
+```{r}
+x = seq(1,10) #a sequence of number from 1 to 10
+#x=1:10 is equivalent
 
-
+y = x
+f = outer(x,y,function(x,y)cos(y)/(1+x^2))
+contour(x,y,f)
+"contour(x,y,f,nlevels=45,add=T)
+fa=(f-t(f))/2
+contour (x,y,fa,nlevels =15)"
+```
+```{r}
+x = seq(1,1000)
+y = x
+f = outer(x,y,function(x,y)cos(y)/(1+x^2))
+image(x,y,f) #produce a heatmap
+```
+Plotting a three-dimensional plot
+```{r}
+x = seq(1,100)
+y = x
+f = outer(x,y,function(x,y)cos(y)/(1+x^2))
+persp(x,y,f,theta=30,phi=30) #theta and phi control the angles at which the plot is viewed
+```
 
 
 
