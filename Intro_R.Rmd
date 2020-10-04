@@ -78,6 +78,176 @@ y = x
 f = outer(x,y,function(x,y)cos(y)/(1+x^2))
 persp(x,y,f,theta=30,phi=30) #theta and phi control the angles at which the plot is viewed
 ```
+Indexing Data
+```{r}
+A = matrix(1:16,4,4)
+A[2,3]
+```
+
+
+```{r}
+A[c(1,3),c(2,4)]  #slicing a matrix
+A[1:3,2:4]  #Another way...
+A[1:2,]
+A[,1:2]
+```
+```{r}
+A[-c(1,3),]  #don't consider rows 1 and 3
+dim(A) #shape of the matrix (rows, columns)
+```
+Loading Data
+```{r}
+# library(ISLR) -->installing a library
+Auto #this dataset is already present when we installed ISLR library
+names(Auto) #to see columns name
+```
+Additional Graphical and Numerical Summaries
+```{r}
+plot(Auto$cylinders,Auto$mpg)
+#attach(Auto) so we can do:
+#plot(cylinders,mpg)
+#remember!!!: detach(Auto)
+```
+```{r}
+Auto$cylinders=as.factor(Auto$cylinders)  #transform Auto from numeric to categorical (qualitative var)
+```
+```{r}
+plot(Auto$cylinders,Auto$mpg)  #boxplot is printed if  i have categorical variable on x-axis
+```
+```{r}
+hist(Auto$mpg[Auto$cylinders=="4"])  #Added a filter to histogram
+```
+```{r}
+pairs( ~mpg + cylinders + horsepower,Auto)  #produce a scatterplot among the combination of all features
+```
+```{r}
+summary(Auto) #a summary of Auto dataset
+summary(Auto$weight) #summary of a single attribute
+```
+
+```{r}
+savehistory()
+#use loadhistory to load history next time
+```
+###########EXERCISES#############
+```{r}
+College
+```
+```{r}
+names(College)
+```
+```{r}
+College
+```
+```{r}
+summary(College)
+```
+```{r}
+pairs(College[,1:10])  #scatterplot of first 10 features (columns)
+```
+```{r}
+plot(College$Outstate,College$Private)
+```
+We want to create a qualitative variable [Yes/No] with college$Top10perc > or < 50
+```{r}
+Elite = rep("No",nrow(College))
+Elite[College$Top10perc>50]="Yes"
+Elite=as.factor(Elite)
+College=data.frame(College,Elite)
+```
+
+
+```{r}
+College
+```
+```{r}
+summary(College$Elite)
+```
+```{r}
+par(mfrow=c(2,2)) #create a 2x2 plot
+hist(College$Accept)
+hist(College$Enroll)
+hist(College$Top10perc)
+hist(College$Top25perc)
+```
+A function to set image size:
+```{r}
+Auto
+```
+Finding min/max of quantitative variables
+
+```{r}
+Auto=na.omit(Auto) #removes rows with missing values
+names(Auto)
+```
+
+
+```{r}
+range(Auto$displacement)
+range(Auto$mpg)
+range(Auto$horsepower)
+range(Auto$weight)
+range(Auto$acceleration)
+range(Auto$year)
+range(Auto$origin)
+```
+Mean and standard deviation of quantitative variables
+```{r}
+print("####Mean###")
+mean(Auto$displacement)
+mean(Auto$mpg)
+mean(Auto$horsepower)
+mean(Auto$weight)
+mean(Auto$acceleration)
+mean(Auto$year)
+mean(Auto$origin)
+print("####Variance:####")
+sqrt(var(Auto$displacement))
+sqrt(var(Auto$mpg))
+sqrt(var(Auto$horsepower))
+sqrt(var(Auto$weight))
+sqrt(var(Auto$acceleration))
+sqrt(var(Auto$year))
+sqrt(var(Auto$origin))
+
+```
+Slicing Auto dataset
+```{r}
+Auto1 = Auto[-c(rep(10:85)),]  #We remove from the dataset rows from 10 to 85
+```
+We recalculate Min/Max, Mean, Std
+```{r}
+print("####Min/Max####")
+range(Auto1$displacement)
+range(Auto1$mpg)
+range(Auto1$horsepower)
+range(Auto1$weight)
+range(Auto1$acceleration)
+range(Auto1$year)
+range(Auto1$origin)
+print("####Mean###")
+mean(Auto1$displacement)
+mean(Auto1$mpg)
+mean(Auto1$horsepower)
+mean(Auto1$weight)
+mean(Auto1$acceleration)
+mean(Auto1$year)
+mean(Auto1$origin)
+print("####Variance:####")
+sqrt(var(Auto1$displacement))
+sqrt(var(Auto1$mpg))
+sqrt(var(Auto1$horsepower))
+sqrt(var(Auto1$weight))
+sqrt(var(Auto1$acceleration))
+sqrt(var(Auto1$year))
+sqrt(var(Auto1$origin))
+```
+Plotting scatterplots for combination of different predictors(features)
+```{r}
+pairs(~ mpg + displacement + horsepower+ cylinders+weight +acceleration 
+ , Auto)
+```
+
 
 
 
