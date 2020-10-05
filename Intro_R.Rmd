@@ -247,10 +247,65 @@ Plotting scatterplots for combination of different predictors(features)
 pairs(~ mpg + displacement + horsepower+ cylinders+weight +acceleration 
  , Auto)
 ```
+Exercise on Boston dataset
+
+```{r}
+Boston
+??Boston #To have infos about this dataset (columns' description)
+
+```
+```{r}
+dim(Boston) #dimensions of our dataset
+```
+```{r}
+pairs(Boston[,1:10])
+```
+
+Focus on some specific variables...
+```{r}
+pairs(~crim+age+dis,Boston)
+```
+```{r}
+Boston=na.omit(Boston) #removes rows with missing values
+```
 
 
+```{r}
+print("####Min/Max####")
+range(Boston$crim)
+#range(Boston$Tax)
+range(Boston$ptratio)
 
-
+```
+```{r}
+Boston$age[Boston$chas == "1"] #we have 35 rows with chas =1!!!
+```
+```{r}
+summary(Boston$ptratio)
+```
+```{r}
+Boston
+```
+```{r}
+subset(Boston,medv == min(medv)) #rows(suburbs) with lowest medv
+```
+```{r}
+print("####Min/Max####")
+range(Boston$crim)
+#range(Boston$Tax)
+range(Boston$ptratio)
+range(Boston$nox)
+```
+```{r}
+subset(Boston,rm > 7)  #We have 64 suburbs with avg more than 7 rooms per dwelling (dimora)
+```
+```{r}
+subset(Boston,rm > 8)  #We have 13 suburbs with avg more than 8 rooms per dwelling (dimora)
+```
+With this scenario (rm>8), we have;
+-High percentage of old house, build before 1940 (age var high!!!)
+-Very low crime rate!!! (crim var)
+-
 
 
 
