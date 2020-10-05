@@ -303,7 +303,7 @@ subset(Boston,rm > 7)  #We have 64 suburbs with avg more than 7 rooms per dwelli
 subset(Boston,rm > 8)  #We have 13 suburbs with avg more than 8 rooms per dwelling (dimora)
 ```
 With this scenario (rm>8), we have;
--High percentage of old house, build before 1940 (age var high!!!)
+-High percentage of old houses, build before 1940 (age var high!!!)
 -Very low crime rate!!! (crim var)
 
 
