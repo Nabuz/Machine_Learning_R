@@ -1,9 +1,3 @@
----
-output:
-  html_document:
-    df_print: paged
----
-
 Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
 Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
 
@@ -183,47 +177,12 @@ Auto
 Finding min/max of quantitative variables
 
 ```{r}
-Auto=na.omit(Auto) #removes rows with missing values
-names(Auto)
+Auto1=na.omit(Auto) #removes rows with missing values
+names(Auto1)
 ```
 
 
 ```{r}
-range(Auto$displacement)
-range(Auto$mpg)
-range(Auto$horsepower)
-range(Auto$weight)
-range(Auto$acceleration)
-range(Auto$year)
-range(Auto$origin)
-```
-Mean and standard deviation of quantitative variables
-```{r}
-print("####Mean###")
-mean(Auto$displacement)
-mean(Auto$mpg)
-mean(Auto$horsepower)
-mean(Auto$weight)
-mean(Auto$acceleration)
-mean(Auto$year)
-mean(Auto$origin)
-print("####Variance:####")
-sqrt(var(Auto$displacement))
-sqrt(var(Auto$mpg))
-sqrt(var(Auto$horsepower))
-sqrt(var(Auto$weight))
-sqrt(var(Auto$acceleration))
-sqrt(var(Auto$year))
-sqrt(var(Auto$origin))
-
-```
-Slicing Auto dataset
-```{r}
-Auto1 = Auto[-c(rep(10:85)),]  #We remove from the dataset rows from 10 to 85
-```
-We recalculate Min/Max, Mean, Std
-```{r}
-print("####Min/Max####")
 range(Auto1$displacement)
 range(Auto1$mpg)
 range(Auto1$horsepower)
@@ -231,6 +190,9 @@ range(Auto1$weight)
 range(Auto1$acceleration)
 range(Auto1$year)
 range(Auto1$origin)
+```
+Mean and standard deviation of quantitative variables
+```{r}
 print("####Mean###")
 mean(Auto1$displacement)
 mean(Auto1$mpg)
@@ -247,11 +209,43 @@ sqrt(var(Auto1$weight))
 sqrt(var(Auto1$acceleration))
 sqrt(var(Auto1$year))
 sqrt(var(Auto1$origin))
+
+```
+Slicing Auto dataset
+```{r}
+Auto2 = Auto[-c(rep(10:85)),]  #We remove from the dataset rows from 10 to 85
+```
+We recalculate Min/Max, Mean, Std
+```{r}
+print("####Min/Max####")
+range(Auto2$displacement)
+range(Auto2$mpg)
+range(Auto2$horsepower)
+range(Auto2$weight)
+range(Auto2$acceleration)
+range(Auto2$year)
+range(Auto2$origin)
+print("####Mean###")
+mean(Auto2$displacement)
+mean(Auto2$mpg)
+mean(Auto2$horsepower)
+mean(Auto2$weight)
+mean(Auto2$acceleration)
+mean(Auto2$year)
+mean(Auto2$origin)
+print("####Variance:####")
+sqrt(var(Auto2$displacement))
+sqrt(var(Auto2$mpg))
+sqrt(var(Auto2$horsepower))
+sqrt(var(Auto2$weight))
+sqrt(var(Auto2$acceleration))
+sqrt(var(Auto2$year))
+sqrt(var(Auto2$origin))
 ```
 Plotting scatterplots for combination of different predictors(features)
 ```{r}
 pairs(~ mpg + displacement + horsepower+ cylinders+weight +acceleration 
- , Auto)
+ , Auto2)
 ```
 Exercise on Boston dataset
 
@@ -311,6 +305,9 @@ subset(Boston,rm > 8)  #We have 13 suburbs with avg more than 8 rooms per dwelli
 With this scenario (rm>8), we have;
 -High percentage of old houses, build before 1940 (age var high!!!)
 -Very low crime rate!!! (crim var)
+
+
+
 
 
 
