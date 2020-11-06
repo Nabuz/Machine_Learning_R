@@ -1,11 +1,11 @@
 ---
-title: "Linear_Regression"
-output: html_document
+output:
+  html_document:
+    df_print: paged
+  github_document:
+    html_preview: no
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ## R Markdown
 
