@@ -1,22 +1,13 @@
 ---
-output:
-  html_document:
-    df_print: paged
-  github_document:
-    html_preview: no
+title: "Linear Regression"
+author: Hani Nabulsi
+date: 07/Oct/2020
+output: html_document
 ---
-
-
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-
---------------------------------------------------------------------------
-Library function --> used to load libraries, groups of functions that are not                     included in base R distribution 
-                 --> we need to use library() function must be called each                        time to use a given package
+```{r global_options, include = TRUE}
+knitr::opts_chunk$set(message=FALSE) 
+```
+Library function --> used to load libraries, groups of functions that are not included in base R distribution --> we need to use library() function must be called each time to use a given package
 
 ```{r}
 library(MASS)  #very large dataset of collection of datasets and functions
@@ -26,15 +17,14 @@ SIMPLE LINEAR REGRESSION
 ```{r}
 ?Boston #Infos about Boston dataset
 
-Boston #This dataset contains for each example a specific neighborhoods of Boston
+Boston[1:5,] #This dataset contains for each example a specific neighborhoods of Boston
 ```
 ```{r}
 names(Boston) #The columns names of our dataset Boston
 ```
 ```{r}
 lm.fit = lm(medv~lstat,data=Boston)  #Simple linear regression. medv=Responce, lstat=Predictor 
-```
-```{r}
+
 summary(lm.fit) #Statistical infos about the simple linear regression
 ```
 ```{r}
@@ -55,8 +45,8 @@ predict(lm.fit,data.frame(lstat=c(5,10,15)),interval="prediction")
 #Confidence interval for some responce values (according to some values of the predictor-->lstat)
 ```
 ```{r}
-#attach(Boston) #In this way we can use directly the column name and not Dataset$ColumnName
-plot(lstat,medv)
+#attach(Boston) In this way we can use directly the column name and not Dataset$ColumnName
+plot(Boston$lstat,Boston$medv)
 abline(lm.fit,lwd=3,col="red")
 ```
 ```{r}
@@ -120,7 +110,7 @@ summary(lm(medv~log(rm),data=Boston)) #We convert a predictor (rm) to log value 
 Qualitative Predictors
 
 ```{r}
-Carseats
+Carseats[1:5,]
 ```
 ```{r}
 names(Carseats)
@@ -151,7 +141,7 @@ print ("The libraries have been loaded")
 EXERCISES DEVELOPTED BY MY OWN
 
 ```{r}
-Auto
+Auto[1:5,]
 ```
 ```{r}
 lm.fit1 = lm(mpg~horsepower,data=Auto)
@@ -184,9 +174,7 @@ plot(Auto)
 ```
 From the plot of all vars we find a qualitative variable (name). We plot the correlation matrix excluding this variable.
 
-```{r}
 
-```
 ```{r}
 sapply(Auto,class) #We need to convert cylinders from factor to number
 ```
@@ -202,24 +190,20 @@ corrplot(cor(Auto_ver2[,1:8]),method = "number",type = "upper") # show only uppe
 lr_Auto = lm(Auto_ver2$mpg~.-name,data=Auto)
 summary(lr_Auto)
 ```
---Is there a relationship between the predictors and the response?
---Which predictors appear to have a statistically significant relationship   to the response?
-<<There are many variables statistically significant (low p-value--> <1%)
-  ##Intercept,Cylinders (4/5),Horsepower,Weight,Year,Origin##
-  
---What does the coefficient for the year variable suggest?
-<<If we icrease by 1 year, on average, the mpg decreaes by 0.261  
-  mpg/gallon.
+Is there a relationship between the predictors and the response?
+Which predictors appear to have a statistically significant relationship   to the response?
+There are many variables statistically significant (low p-value--> <1%) ##Intercept,Cylinders (4/5),Horsepower,Weight,Year,Origin##
+What does the coefficient for the year variable suggest?
+If we icrease by 1 year, on average, the mpg decreaes by 0.261 mpg/gallon.
 ```{r}
 #Use the plot() function to produce diagnostic plots of the least squares regression fit. Comment on any problems you see with the fit
 plot(lr_Auto)
 
 ```
-  <<From residual we can use our linear model and not a non-linear model 
-    (residuals are closed to y=0 line).
-  <<We have some instances with high residual vs fittet value (Outlier)-->     387,327,323 and others (Standardize residual >3 we classified an 
-    outlier). SR(Standardize residual) = 2 -->We have residuals!!
-  <<We have an istance with high std residuals and high leverage!!--> 328
+
+From residual we can use our linear model and not a non-linear model (residuals are closed to y=0 line).
+We have some instances with high residual vs fittet value (Outlier)-->387,327,323 and others (Standardize residual >3 we classified an outlier). SR(Standardize residual) = 2 -->We have residuals!!
+We have an istance with high std residuals and high leverage!!--> 328
 
 Remember: points with high residuals (outliers) don't affect linear regression shape but the RSE (Residual Sum of Error). Point with high leverage affect the linear regression shape. Points with high residuals and leverage are the worst!!!
 
@@ -244,8 +228,7 @@ lm.squared5 = lm(mpg~poly(weight,5)+year,data=Auto)  #Fith degree polinomio is n
                                                      #No statistically significant over 3th degree!!
 summary(lm.squared5)
 ```
---Now we try to transform X to log(X).
-
+Now we try to transform X to log(X).
 ```{r}
 lr_Auto_squared = lm(Auto_ver2$mpg~+year+I(weight^2),data=Auto)
 summary(lr_Auto_squared)  #THis model gives a good performance!!!
@@ -259,10 +242,10 @@ lr_Auto_squared_log = lm(Auto_ver2$mpg~+year+I(log(weight)),data=Auto)
 summary(lr_Auto_squared_log) #For one unit of increasing in log(weight),  mpg decrease almost of 20 units!!!
 ```
 Now we work with Carseats dataset:
---Fit a multiple model to predict Sales using Price, Urban, and US.
---Provide an interpretation of each coefficient in the model.
+Fit a multiple model to predict Sales using Price, Urban, and US.
+Provide an interpretation of each coefficient in the model.
 ```{r}
-Carseats
+Carseats[1:5,]
 ```
 
 ```{r}
@@ -273,87 +256,61 @@ summary(lr_Carseats) #Urban variable is not statistically significant, we elimin
 lr_Carseats2 = lm(Sales~Price+US,data=Carseats)
 summary(lr_Carseats2) #If we have a shop in Us, on average, the sales in a store increases by 1190 units.
 ```
---For which of the predictors can you reject the null hypothesis H0:Bj =    0?
-<<We can reject the Null Hypo for Price and US, not Urban (High P-Value!!)
---How well do the model (with Urban predictors) vs without??
-<<The performance (RSE and MUltiple R^2 are the same--> we can delete  
-  Urban predictors!!)
-  
---Using the model without Urban and obtain the 95% confidence intervals in   the model.
+For which of the predictors can you reject the null hypothesis H0:Bj = 0?
+We can reject the Null Hypo for Price and US, not Urban (High P-Value!!)
+How well do the model (with Urban predictors) vs without??
+The performance (RSE and MUltiple R^2 are the same--> we can delete Urban predictors!!)
+Using the model without Urban and obtain the 95% confidence intervals in   the model.
 ```{r}
 confint(lr_Carseats2) # We don't have confident intervals that include 0 --> Beta values are statistically good!!
 ```
---Is there evidence of outliers or high leverage observations in the model
-  (lr_Carseats2)?
-
+Is there evidence of outliers or high leverage observations in the model(lr_Carseats2)?
 ```{r}
 par(mfrow=c(2,2)) #If we want to print 4 graphs at the same time
 plot(lr_Carseats2)
 ```
 
-<<We don't need not-linear models (Fitted values vs Residuals graph)
-<<We have some outliers (High Std Residual): 69 and 377 examples (and more   points also..)
-<<We have some leverage observations (Residuals vs Leverage graph).
-
----------------------------------------------------------------------
-
---In this exercise we will investigate the t-statistic for the null 
-  hypothesis H0:Beta = 0 in simple linear regression without an intercept.
-  
---We begin by genereting a predictor X and a response y ,as follows:
-
+We don't need not-linear models (Fitted values vs Residuals graph)
+We have some outliers (High Std Residual): 69 and 377 examples (and more   points also..)
+We have some leverage observations (Residuals vs Leverage graph).
+In this exercise we will investigate the t-statistic for the null hypothesis H0:Beta = 0 in simple linear regression without an intercept. We begin by genereting a predictor X and a response y ,as follows:
 ```{r}
 set.seed(1)
 x=rnorm(100)  #An array of 100 random number from normal distribution.
 y = 2*x+rnorm(100)
 ```
---Perform a simple linear regression y on x witout the intercept. Give a 
-  comments on statistical results.
+Perform a simple linear regression y on x witout the intercept. Give a comments on statistical results.
 ```{r}
 lr_new = lm(y~x+0) #In this way we don't add the intercept --> the regression passes throught axis origin
 summary(lr_new)
 ```
-  <<Obviously the X is strongly related to y (Low RSE and very high 
-    R^2!!!)
-  -------------------------------------------------------------------
-  --Same as before but with the intercept...
-  
+Obviously the X is strongly related to y (Low RSE and very high R^2!!!) Same as before but with the intercept
 ```{r}
 lr_new = lm(y~x)
 summary(lr_new)
 ```
-  <<The intercept increases the RSE, the R^2 and ,most important, has high     P-value
-  ------------------------------------------------------------------------
-  
-  --In this exercise we will create some simulated data and will fit    
-    simple linear regression models to it.
-  --Using the rnorm() function, create a vector x containing 100  
-    observations drawn from a N(0,1) distribution.
-  --Using the rnorm() function create a vector eps containing 100  
-    observations drawn from n(0,0.25).
-  --Using x and eps generate a vector y = -1 +0.5x + eps
-  
+The intercept increases the RSE, the R^2 and ,most important, has high P-value.
+In this exercise we will create some simulated data and will fit simple linear regression models to it.
+Using the rnorm() function, create a vector x containing 100.Using the rnorm() function create a vector eps containing 100 observations drawn from n(0,0.25).Using x and eps generate a vector y = -1 +0.5x + eps.
 ```{r}
 set.seed(1)
 x = rnorm(100,0,1)
 eps = rnorm(100,0,0.25)
 y = -1 +0.5*x + eps
 ```
-  
---Create a scatterplot displaying the relationship between x and y
+Create a scatterplot displaying the relationship between x and y
 ```{r}
 plot(x,y) # We can see a high relation among x and y!!!
 ```
---Fit a least squares linear model (y on x). Comment on the result (also 
-  real beta vs fitted beta...)
+
+Fit a least squares linear model (y on x). Comment on the result (also real beta vs fitted beta...)
 ```{r}
 lr_simple = lm(y~x)
 summary(lr_simple)  #We can check real betas are very close to fitted data!!
 #Also the performances are very good!!!
 ```
---Display the least squares line on the scatterplot. Draw the population  
-  regression line using a different color. Use the legend() command to  
-  create an appropriate legend.
+
+Display the least squares line on the scatterplot. Draw the populationregression line using a different color. Use the legend() command to create an appropriate legend.
 ```{r}
 plot(x,y)
 abline(lr_simple,lwd=2,col="red")
@@ -361,20 +318,17 @@ abline(-1,0.5,lwd=1,col="blue")
 legend(x="topleft", legend=c("Linear Regression", "Pop. Linear Regression"), col=c("red","blue"),lwd=1, lty=c(1,1),cex=0.55)
 #The linear regr and pop. linear regress. are almost the same!!!
 ```
-  
---Now fit a polynomial regression model that predicts y using x and x^2. The new 
-  quadratic model improves the model fit ?
+
+Now fit a polynomial regression model that predicts y using x and x^2. The new quadratic model improves the model fit ?
 ```{r}
 lr_x2 = lm(y~+poly(x,2))
 summary(lr_x2)  #the second degree poly doesn't improve the model!!!(low P-value for beta for x^2)
 ```
---Re-doing the linear model with less noise in the data: You can do this by decreasing 
-  the variance of the normal distribution used to generate the error term (erp)
-
+Re-doing the linear model with less noise in the data: You can do this by decreasing the variance of the normal distribution used to generate the error term (erp)
 ```{r}
 set.seed(1)
 x = rnorm(100,0,1)
-eps = rnorm(100,0,0.1)  #We decrease the variance-->we have lessnoise in the data!!!
+eps = rnorm(100,0,0.1)  #We decrease the variance-->we have less noise in the data!!!
 y = -1 +0.5*x + eps
 ```
 
@@ -382,8 +336,7 @@ y = -1 +0.5*x + eps
 lr_simple2 =lm(y~x)
 summary(lr_simple2)  #With less noise is easy to find a linear model to fit the data!!!
 ```
---Re-doing the model with more noise in the data
-
+Re-doing the model with more noise in the data
 ```{r}
 set.seed(1)
 x = rnorm(100,0,1)
@@ -404,60 +357,46 @@ confint(lr_simple2)
 print("Model with more noise")  #With more noise-->We have a larger confident interval
 confint(lr_simple3)
 ```
--------------------------------------------------------------------------------------------------
---This problem focuses on the collinearity proble
---We create a linear model with y is function of x1and x2
-
+This problem focuses on the collinearity problem. We create a linear model with y is function of x1and x2
 ```{r}
 set.seed(1)
 x1=runif(100) #We obtain 100 random values from a normal distribution
 x2=0.5*x1+rnorm(100)/100
 y=2 + 2*x1+0.3*x2+rnorm(100) #The regression coefficient (of the population) Binterept=2, Bx1=2, Bx2=0.3 
 ```
---What the correlation between x1 and x2 ? Create a scatterplot displaying the relationship between the variables.
-
+What the correlation between x1 and x2 ? Create a scatterplot displaying the relationship between the variables.
 ```{r}
 plot(x1,x2) #We have strong linear correlation between x1 and x2-->There is a STRONG COLLINEARITY BETWEEB X1 and X2!!
 ```
---Using this data, fit a least squares regression to predict y using x1 and x2.Describe the results obtained.
 
+Using this data, fit a least squares regression to predict y using x1 and x2.Describe the results obtained.
 ```{r}
 lr.coll = lm(y~x1+x2)
 summary(lr.coll)
 ```
---Beta value of population regression are near to predicted beta ?
-<< Predicted Betas are very far from population Beta .
---Can you reject the null hypothesis: H0: B1 and B2=0 ?
-<< I cant reject null Hypothesis-->Low values for P-value    for x1 and x2. x1 -->x2 are not related to y.
-   For the collinearity between x1 and x2 we reject the 
-   null hypothesis and so that there is a correlation 
-   between y and x1/x2.
---Now fit a least squares regression to predict y using  
-  only x1.
+Beta value of population regression are near to predicted beta ?
+Predicted Betas are very far from population Beta .
+Can you reject the null hypothesis: H0: B1 and B2=0 ?
+I cant reject null Hypothesis-->Low values for P-value    for x1 and x2. x1 -->x2 are not related to y.
+For the collinearity between x1 and x2 we reject the null hypothesis and so that there is a correlation between y and x1/x2.
+Now fit a least squares regression to predict y using only x1.
 ```{r}
 lr.x1 =lm(y~x1)
 summary(lr.x1)
 ```
-  <<Fitting a linear regression with a single predictor      (x1) is better than two because doesn't have  
-    correlated predictors. We have a strong correlation  
-    between y and x1 (low p-value!!! and we reject the  
-    null hypothesis H0:b1 = 0)
+Fitting a linear regression with a single predictor (x1) is better than two because doesn't have correlated predictors. We have a strong correlation between y and x1 (low p-value!!! and we reject the null hypothesis H0:b1 = 0)
 ```{r}
 lr.x2 = lm(y~x2)
 summary(lr.x2)
 ```
-   << As before!!!. If we don't consider two predictors        togheter we have a relation among the predictor  
-      (x2) and the responce y.
-      
-    ----------------------------------------------------------
-   -- We add a specific point.
+As before!!!. If we don't consider two predictors togheter we have a relation among the predictor (x2) and the responce y.
+We add a specific point.
 ```{r}
 x1 = c(x1,0.1)
 x2 = c(x2,0.8)
 y=c(y,6)
 ```
-   --We plot the plot x1 vs x2
-   
+We plot the plot x1 vs x2
 ```{r}
 plot(x1,x2)  #We can observe that the point is a high-leverage point!!!
 ```
@@ -476,7 +415,7 @@ plot(lr.coll2) #From the graphs we can see that the point that we added hav is h
 lr.x1_new = lm(y~x1)
 summary(lr.x1_new)
 ```
-  The performance of the same model without the new point
+The performance of the same model without the new point
 ```{r}
 summary(lr.x1) #THe model without the new point is a little better
 ```
@@ -493,16 +432,11 @@ summary(lr.x2)
 ```{r}
 plot(lr.x2_new) #The new point in this model is not a outlier but has a high-leverage. As told before this situation modify the linear regression shape and so the performance of the linear model.
 ```
- -------------------------------------------------------------------
- 
---We work with Boston dataset and we now try to predict per capita crime 
-  rate using the other variables in this data set.
---For each predictor fit a simple linear regression to predict the   
-  responce. In which model there is a statistically significant 
-  association between predictor and responce?
-  
+
+We work with Boston dataset and we now try to predict per capita crime rate using the other variables in this data set.
+For each predictor fit a simple linear regression to predict the responce. In which model there is a statistically significant association between predictor and responce?
 ```{r}
-Boston
+Boston[1:5,]
 ?Boston
 ```
   
@@ -511,16 +445,14 @@ sapply(Boston, class)  #I can apply linear regr with all vars (no character type
 ```
 ```{r}
 lr.simple1 = lm(crim~zn,data=Boston)
-summary(lr.simple1)  #THere is a relation but high error! (RSE) and low R^2!!
+summary(lr.simple1)  #There is a relation but high error! (RSE) and low R^2!!
 ```
 ```{r}
 #We need to verify with a plot why we have so high RSE!!
 plot(Boston$zn,Boston$crim)
 abline(lr.simple1,lwd=3,col="red")
-#no correlation between Zn and crim!!
+#No correlation between Zn and Crim!!
 ```
-
-
 ```{r}
 lr.simple2 = lm(crim~indus,data=Boston)
 summary(lr.simple2) #Better situation than previous model (Higher R^2) but we have very high error!!
@@ -548,19 +480,11 @@ plot(Boston$rm,Boston$crim)
 abline(lr.simple4,lwd=3,col="red") #No relation between rm and crim vars!!!
 ```
 
- ---------------------------------------------------------------------
- 
- --Fit a multiple regression model to predict the responce using all the 
-   predictors. For which predictrs can we reject the null hyphotesis 
-   (H0:Bj =0) ?
-   
+Fit a multiple regression model to predict the responce using all the predictors. For which predictrs can we reject the null hyphotesis (H0:Bj =0) ?
 ```{r}
 lr.all = lm(crim~.,data=Boston)
-summary(lr.all)  #Variables statistically significant (low P-value):
-                 #dis,rad and medv-->here we can reject the null  
-                 #hypothesis-> relation among these var and the responce                   #(crim)
+summary(lr.all)  
+#Variables statistically significant (low P-value):
+#dis,rad and medv-->here we can reject the null  
+#hypothesis-> relation among these var and the responce (crim)
 ```
-   
-  
-
-
