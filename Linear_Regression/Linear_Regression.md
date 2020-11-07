@@ -619,6 +619,7 @@ plot(Auto)
 ```
 
 ![](README_figs/README-unnamed-chunk-34-1.png)<!-- -->
+
 From the plot of all vars we find a qualitative variable (name). We plot the correlation matrix excluding this variable.
 
 
