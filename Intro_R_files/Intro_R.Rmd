@@ -1,11 +1,17 @@
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Ctrl+Alt+I*.
--------------------------------------------------------------------------
+---
+title: "Introduction to R language"
+author: "Hani Nabulsi"
+date: "07/Oct/2020"
+output:
+  html_document:
+    keep_md: true
+---
+```{r global_options, include = TRUE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE,fig.path = "README_figs/README-" ) 
+```
 Here I use basic R command to learn to use this new language!!!!
 
 Creating a vector:
-
-
 ```{r}
 x <-c(1,3,2,5)  #c-->concatenate
 y <-c(1,4,3)
@@ -20,6 +26,7 @@ List of objects / delete objects
 ls()  #list of all objects
 rm(x,y) #delete objects, we can also use rm(list=ls()) to delete all objects
 ```
+
 Documentation about a function
 
 ?FunctionName
@@ -53,6 +60,7 @@ jpeg("FiguraTest.jpeg")  #We create a jpeg of the plot
 plot(x,y,xlab="this is the x-axis",ylab="this is the y-axis",main="PLot of X vs Y")
 dev.off()
 ```
+
 More sophisticate plot
 ```{r}
 x = seq(1,10) #a sequence of number from 1 to 10
@@ -71,6 +79,7 @@ y = x
 f = outer(x,y,function(x,y)cos(y)/(1+x^2))
 image(x,y,f) #produce a heatmap
 ```
+
 Plotting a three-dimensional plot
 ```{r}
 x = seq(1,100)
@@ -78,6 +87,7 @@ y = x
 f = outer(x,y,function(x,y)cos(y)/(1+x^2))
 persp(x,y,f,theta=30,phi=30) #theta and phi control the angles at which the plot is viewed
 ```
+
 Indexing Data
 ```{r}
 A = matrix(1:16,4,4)
@@ -97,10 +107,12 @@ dim(A) #shape of the matrix (rows, columns)
 ```
 Loading Data
 ```{r}
-# library(ISLR) -->installing a library
-Auto #this dataset is already present when we installed ISLR library
+library(ISLR) #-->installing a library
+library(MASS)
+Auto[1:5,] #this dataset is already present when we installed ISLR library
 names(Auto) #to see columns name
 ```
+
 Additional Graphical and Numerical Summaries
 ```{r}
 plot(Auto$cylinders,Auto$mpg)
@@ -126,19 +138,17 @@ summary(Auto$weight) #summary of a single attribute
 ```
 
 ```{r}
-savehistory()
+#savehistory()
 #use loadhistory to load history next time
 ```
 ###########EXERCISES#############
 ```{r}
-College
+College[1:5,]
 ```
 ```{r}
 names(College)
 ```
-```{r}
-College
-```
+
 ```{r}
 summary(College)
 ```
@@ -148,17 +158,13 @@ pairs(College[,1:10])  #scatterplot of first 10 features (columns)
 ```{r}
 plot(College$Outstate,College$Private)
 ```
+
 We want to create a qualitative variable [Yes/No] with college$Top10perc > or < 50
 ```{r}
 Elite = rep("No",nrow(College))
 Elite[College$Top10perc>50]="Yes"
 Elite=as.factor(Elite)
 College=data.frame(College,Elite)
-```
-
-
-```{r}
-College
 ```
 ```{r}
 summary(College$Elite)
@@ -170,10 +176,12 @@ hist(College$Enroll)
 hist(College$Top10perc)
 hist(College$Top25perc)
 ```
+
 A function to set image size:
 ```{r}
-Auto
+Auto[1:5,]
 ```
+
 Finding min/max of quantitative variables
 
 ```{r}
@@ -191,6 +199,7 @@ range(Auto1$acceleration)
 range(Auto1$year)
 range(Auto1$origin)
 ```
+
 Mean and standard deviation of quantitative variables
 ```{r}
 print("####Mean###")
@@ -211,6 +220,7 @@ sqrt(var(Auto1$year))
 sqrt(var(Auto1$origin))
 
 ```
+
 Slicing Auto dataset
 ```{r}
 Auto2 = Auto[-c(rep(10:85)),]  #We remove from the dataset rows from 10 to 85
@@ -247,10 +257,10 @@ Plotting scatterplots for combination of different predictors(features)
 pairs(~ mpg + displacement + horsepower+ cylinders+weight +acceleration 
  , Auto2)
 ```
-Exercise on Boston dataset
 
+Exercise on Boston dataset
 ```{r}
-Boston
+Boston[1:5,]
 ??Boston #To have infos about this dataset (columns' description)
 
 ```
@@ -268,8 +278,6 @@ pairs(~crim+age+dis,Boston)
 ```{r}
 Boston=na.omit(Boston) #removes rows with missing values
 ```
-
-
 ```{r}
 print("####Min/Max####")
 range(Boston$crim)
@@ -284,7 +292,7 @@ Boston$age[Boston$chas == "1"] #we have 35 rows with chas =1!!!
 summary(Boston$ptratio)
 ```
 ```{r}
-Boston
+Boston[1:5,]
 ```
 ```{r}
 subset(Boston,medv == min(medv)) #rows(suburbs) with lowest medv
@@ -297,18 +305,11 @@ range(Boston$ptratio)
 range(Boston$nox)
 ```
 ```{r}
-subset(Boston,rm > 7)  #We have 64 suburbs with avg more than 7 rooms per dwelling (dimora)
+subset(Boston[1:15,],rm > 7)  #We have 64 suburbs with avg more than 7 rooms per dwelling (dimora)
 ```
 ```{r}
-subset(Boston,rm > 8)  #We have 13 suburbs with avg more than 8 rooms per dwelling (dimora)
+subset(Boston[1:15,],rm > 8)  #We have 13 suburbs with avg more than 8 rooms per dwelling (dimora)
 ```
 With this scenario (rm>8), we have;
 -High percentage of old houses, build before 1940 (age var high!!!)
 -Very low crime rate!!! (crim var)
-
-
-
-
-
-
-
