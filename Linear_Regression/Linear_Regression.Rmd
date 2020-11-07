@@ -1,11 +1,13 @@
 ---
 title: "Linear Regression"
-author: Hani Nabulsi
-date: 07/Oct/2020
-output: html_document
+author: "Hani Nabulsi"
+date: "07/Oct/2020"
+output:
+  html_document:
+    keep_md: true
 ---
 ```{r global_options, include = TRUE}
-knitr::opts_chunk$set(message=FALSE) 
+knitr::opts_chunk$set(message=FALSE,warning=FALSE,fig.path = "README_figs/README-" ) 
 ```
 Library function --> used to load libraries, groups of functions that are not included in base R distribution --> we need to use library() function must be called each time to use a given package
 
