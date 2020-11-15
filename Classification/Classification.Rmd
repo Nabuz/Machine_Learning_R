@@ -1,0 +1,147 @@
+---
+title: "Classification"
+author: "Hani Nabulsi"
+date: "15/11/2020"
+output:
+  html_document:
+    keep_md: true
+---
+```{r global_options, include = TRUE}
+knitr::opts_chunk$set(message=FALSE,warning=FALSE,fig.path = "README_figs/README-" ) 
+```
+THE STOCK MARKET DATA
+
+We work with Smarket dataset:
+
+Lag1-Lag5 --> Percentage of returns for each of the five previous days
+Volume --> Number of shares trades on previous day in billions
+Today --> The percentage return on the date in question
+Direction -->If the market was up or down on the specific date
+
+```{r}
+library(ISLR) #Load the library plus some basic inspection
+names(Smarket)
+
+dim(Smarket)
+
+summary(Smarket)
+```
+
+We use cor() to produce a matrix that contains all the pairwise correlations among the predictors.
+```{r}
+library(corrplot)
+corrplot(cor(Smarket[,1:8]),method="circle",type= "upper") #We esclude the direction because is qualitative
+```
+
+There is only a (linear) correlation (about 0.5) between Year and Volume predictors. The volume increases over the time, the average number of shares daily increase from 2001 to 2005.
+
+Correlations between the lag vars and today is zero --> no correlation between today return and previous return
+
+```{r}
+boxplot(Volume~Year, data=Smarket, main="Volume(shares trade in billion) over the 2011-2005",xlab="Year",ylab="Volume",col="orange",border ="brown") #The average daily shares (avg volume) traded increase by the year!!! (cor index = 0.5)
+```
+
+LOGISTIC REGRESSION:
+
+Now we fit a logistic regression to predict the Direction using Lag1-Lag5 and Volume.
+
+glm()-->generalized linear models, a class of model that includes the logistic regression.
+```{r}
+glm.fits = glm(Direction~Lag1+Lag2*Lag3+Lag4+Lag5*Volume,data = Smarket,family=binomial)
+#family=binomial tells R to use logistic regression among the class of generalized linear model.
+summary(glm.fits)
+```
+
+We have only a predictor that could be related to the responce: Lag1 (lowest P-value).
+
+The parameter for lag1 is negative --> if the return of previous day is positive than the probability of today to go up (Direction) decreases. But here the P-value is too large (0.144) --> no statistically significance -->no correlation between Lag1 and Direction!!!
+
+
+```{r}
+glm.probs = predict(glm.fits, type="response") # type="respomce"-->gives probability of the form P(y=1|X).If you dont tell on which data you'll do prediction is calculated on training set used for the fit.
+glm.probs[1:10]
+```
+```{r}
+contrasts(Smarket$Direction) #So P(y=1|X), Y=1--> Up
+```
+
+Now we need to convert our arrey of prediction (glm.probs) as an array with "up" and "down"
+
+```{r}
+glm.pred=rep("Down",1250) #We create an array with 1250 values, fills with "Down"
+glm.pred[glm.probs>0.5] = "Up" #we fill the array with "Up" if the probability of this value in glm.probs array is > 0.5
+```
+
+Now we plot the confusion matrix
+
+```{r}
+table(glm.pred,Smarket$Direction)
+```
+
+```{r}
+print("Accuracy on Training Set is: ")
+mean(glm.pred==Smarket$Direction) #Equivalent to : (148 + 519)/1250
+```
+
+Could be that the logistic regression is better than a "by chance" classificator (Accuracy -->0.5). It's no true!! We are predicting our values on training set-->to optiomistic setting!! Try to setup a more realistic setting (fitting on traing set and test on test set).
+```{r}
+print("Error rate on Training set is")
+mean(glm.pred!=Smarket$Direction)
+```
+```{r}
+Smarket.2005 = Smarket[Smarket$Year==2005,] #A subset of Smarket with only the rows with Year = 2005
+Direction.2005 = Smarket[Smarket$Year==2005,9] 
+dim(Smarket.2005)
+Train = Smarket[Smarket$Year !=2005,] #We use as Training set Year 2001-2004
+dim(Train)
+```
+
+For a more realistic setting, we fit the logistic model on Subset Year 2001-2004 (Train)
+and test it on subset with Year=2005 (Smarket.2005)
+```{r}
+glm.fit_Train = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data = Train,family=binomial)
+glm.probs=predict(glm.fit_Train,Smarket.2005,type="response")
+```
+```{r}
+glm.pred = rep("Down",252)
+glm.pred[glm.probs>0.5] ="Up"
+table(glm.pred,Direction.2005)
+```
+
+Now we calculate the performance on Test set (Direction.2005)
+
+```{r}
+print("The accuracy on test set is:")
+mean(glm.pred==Direction.2005)
+print("The test error rate is:")
+mean(glm.pred!=Direction.2005)
+```
+
+The performance on Test set is worst than "By chance" classifier !
+
+If we fit the logistic regression with all predictors (also predictors with high P-value), so predictors with no relationship with the responce, follows a deterioration in test error rate (predictors with high P-value increase the variance without a corresponding decrease in bias -->check Bias-Variance tradeoff!!!)
+
+We re-fit the logisti regression with two best predictors (smaller P-value) -->Lag1, Lag2
+
+```{r}
+glm.fits_best = glm(Direction~Lag1+Lag2,data=Train,family=binomial)
+glm.probs = predict(glm.fits_best,Smarket.2005,type="response")
+glm.pred =rep("Down",252)
+glm.pred[glm.probs>0.5]="Up"
+table(glm.pred,Direction.2005)
+```
+
+```{r}
+print("The accuracy is:")
+mean(glm.pred==Direction.2005)
+print("The test error rate is:")
+mean(glm.pred!=Direction.2005)
+```
+
+With fitting the logistic model with predictors with lowest P-value we have better performance!!!
+
+Now we want to predict the direction of the stock with Lag1 = 1.2 and Lag2 = 1.1. We want also predict the direction fo the stock with Lag1 = 1.5 and Lag2 = -0.8 .
+```{r}
+predict(glm.fits_best,newdata=data.frame(Lag1=c(1.2,1.5),Lag2=c(1.1,-0.8)),type ="response") #<0.5-->the market goes down in both scenarios
+```
+
