@@ -5,6 +5,6 @@ Some predictive models developed in R (exercises from An Introduction to Statist
 
 Each chapter is focused on different predictive models from a statistical point of view.
 
-Chapter 1 : Introduction to R language\n
-Chapter 2 : Focused on Logistic Regression\n
+Chapter 1 : Introduction to R language <br />
+Chapter 2 : Focused on Logistic Regression <br />
 Chapter 3 : About models to predict qualitative predictors (classificators)
