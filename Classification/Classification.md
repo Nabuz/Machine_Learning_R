@@ -357,3 +357,171 @@ predict(glm.fits_best,newdata=data.frame(Lag1=c(1.2,1.5),Lag2=c(1.1,-0.8)),type 
 ## 0.4791462 0.4960939
 ```
 
+LINEAR DISCRIMINANT ANALYSIS
+
+Now we perform LDA on Smarkert.
+
+```r
+library(MASS) #to load lda model
+lda.fit=lda(Direction~Lag1+Lag2,data=Train) #we use Lag1 and Lag2 beacause with logistic regr. had lowest P-value
+lda.fit
+```
+
+```
+## Call:
+## lda(Direction ~ Lag1 + Lag2, data = Train)
+## 
+## Prior probabilities of groups:
+##     Down       Up 
+## 0.491984 0.508016 
+## 
+## Group means:
+##             Lag1        Lag2
+## Down  0.04279022  0.03389409
+## Up   -0.03954635 -0.03132544
+## 
+## Coefficients of linear discriminants:
+##             LD1
+## Lag1 -0.6420190
+## Lag2 -0.5135293
+```
+
+We have prior probability--> percentage of day where market goes down/up
+
+The group mean are the mean of each random variable (predictors Lag1 and Lag2) according to each class. Are the means used to calculate the posteriori probability (and so lda model). The group mean suggest that when the market goes down there is a positive average of return ( in last day and second last day). When the market goes up there is a negative average of the return (in last day and second last day).
+
+The coefficients of linear discriminants: linear combinations of Lag1 anf Lag2 that are used to form the LDA rule. If -0.642xLag1 -0.513xLag2 is large --> LDA classifier will predict "UP", if small predicts "Down". plot() function produces plots of the LINEAR DISCRIMINANTS obtained by computing -0.642xLag1 -0.513xLag2 for each of the training observations. With this this coefficent we calculate also the decision boundary.
+
+
+```r
+plot(Train$Lag1,Train$Lag2,col=Direction.2005)
+abline(lda.fit,lwd=3,col="red")
+legend(-5.2,5.9,unique(Direction.2005),col=1:length(Direction.2005),pch=1)
+```
+
+![](README_figs/README-unnamed-chunk-19-1.png)<!-- -->
+
+
+```r
+lda.pred=predict(lda.fit, Smarket.2005)
+names(lda.pred)
+```
+
+```
+## [1] "class"     "posterior" "x"
+```
+
+Class--> contains LDA's predictions about the movement of the market
+Posterior-->  Each observation has 3 values. These are the posterior probabilities for each class
+x-->the linear discriminant describes before
+
+
+```r
+lda.pred$class[1:20]  #First 20 values predicted from market year = 2500
+```
+
+```
+##  [1] Up   Up   Up   Up   Up   Up   Up   Up   Up   Up   Up   Down Up   Up   Up  
+## [16] Up   Up   Down Up   Up  
+## Levels: Down Up
+```
+
+```r
+lda.pred$posterior[1:5,]  #First 5 posterior probability
+```
+
+```
+##           Down        Up
+## 999  0.4901792 0.5098208
+## 1000 0.4792185 0.5207815
+## 1001 0.4668185 0.5331815
+## 1002 0.4740011 0.5259989
+## 1003 0.4927877 0.5072123
+```
+
+```r
+lda.pred$x[1:10,]  #For Each value i --> lag1(i)*-0.642 + lag2(i)*-0.513
+```
+
+```
+##         999        1000        1001        1002        1003        1004 
+##  0.08293096  0.59114102  1.16723063  0.83335022 -0.03792892 -0.08743142 
+##        1005        1006        1007        1008 
+## -0.14512719  0.21701324  0.05873792  0.35068642
+```
+
+As we told, LDA predictions and logistic predictions are almost identical (in therm of accuracy)
+
+
+```r
+lda.class = lda.pred$class
+table(lda.class,Direction.2005)
+```
+
+```
+##          Direction.2005
+## lda.class Down  Up
+##      Down   35  35
+##      Up     76 106
+```
+
+```r
+mean(lda.class==Direction.2005)
+```
+
+```
+## [1] 0.5595238
+```
+
+With a threshold = 50% to posterior probabilities --> lda.pred$class
+
+
+
+```r
+sum(lda.pred$posterior[,1]>=0.5) #values predicted as Down in lda.class
+```
+
+```
+## [1] 70
+```
+
+```r
+sum(lda.pred$posterior[,1]<0.5) #values predicted as Up in lda.class
+```
+
+```
+## [1] 182
+```
+
+
+```r
+lda.pred$posterior[1:10,1]  #As we can see the first probability is equal to probabilty that a specific day the stock go Down
+```
+
+```
+##       999      1000      1001      1002      1003      1004      1005      1006 
+## 0.4901792 0.4792185 0.4668185 0.4740011 0.4927877 0.4938562 0.4951016 0.4872861 
+##      1007      1008 
+## 0.4907013 0.4844026
+```
+
+```r
+lda.class[1:10] 
+```
+
+```
+##  [1] Up Up Up Up Up Up Up Up Up Up
+## Levels: Down Up
+```
+
+If we want to predict the market goes down, only if we are very sure that the market goes down (thershold>90%)
+
+
+```r
+sum(lda.pred$posterior[,1]>0.9) #We have zero values beacuse the higher posterior probability of the stock goes down in 2005 is 52.02%!!! 
+```
+
+```
+## [1] 0
+```
+
