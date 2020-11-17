@@ -606,6 +606,176 @@ table(lda.class,Direction.2005)</code></pre>
 <p>If we want to predict the market goes down, only if we are very sure that the market goes down (thershold&gt;90%)</p>
 <pre class="r"><code>sum(lda.pred$posterior[,1]&gt;0.9) #We have zero values beacuse the higher posterior probability of the stock goes down in 2005 is 52.02%!!! </code></pre>
 <pre><code>## [1] 0</code></pre>
+<p>Quadratic Discriminant Analysis</p>
+<p>We will now fit a QDA model to our Smarket data.</p>
+<p>As lda(), qda() derives from MASS library. Sintax is identical to that of lda()</p>
+<pre class="r"><code>qda.fit =qda(Direction~Lag1+Lag2,data=Train)
+qda.fit</code></pre>
+<pre><code>## Call:
+## qda(Direction ~ Lag1 + Lag2, data = Train)
+## 
+## Prior probabilities of groups:
+##     Down       Up 
+## 0.491984 0.508016 
+## 
+## Group means:
+##             Lag1        Lag2
+## Down  0.04279022  0.03389409
+## Up   -0.03954635 -0.03132544</code></pre>
+<p>We don’t have the coefficents of the linear disciminants because the QDA classifier involves a quadratic (and not linear as LDA) function of the predictors.</p>
+<p>The predict() works exactly as LDA.</p>
+<pre class="r"><code>qda.class = predict(qda.fit, Smarket.2005)$class
+table(qda.class,Direction.2005)</code></pre>
+<pre><code>##          Direction.2005
+## qda.class Down  Up
+##      Down   30  20
+##      Up     81 121</code></pre>
+<pre class="r"><code>mean(qda.class==Direction.2005)</code></pre>
+<pre><code>## [1] 0.5992063</code></pre>
+<p>We have impressive accuracy!!! 60% in predicting the stock market!! The QDA capture the true relationship more accurately than LDA and logistic regression.</p>
+<p>But pay attention ..test this method on a larger test set before betting QDA approach!!</p>
+<p>K-NEAREST NEIGHBORS:</p>
+<p>We use the knn() as art of CLASS library</p>
+<pre class="r"><code>library(class)
+train.X = cbind(Train$Lag1,Train$Lag2)  #We have a matrix with two columns
+test.X = cbind(Smarket.2005$Lag1,Smarket.2005$Lag2)#a matrix with two columns
+train.Direction =Smarket[Smarket$Year != 2005,9]</code></pre>
+<pre class="r"><code>set.seed(1) #to set the reproducibility
+knn.pred = knn(train.X,test.X,train.Direction,k=1)
+table(knn.pred,Direction.2005)</code></pre>
+<pre><code>##         Direction.2005
+## knn.pred Down Up
+##     Down   43 58
+##     Up     68 83</code></pre>
+<pre class="r"><code>mean(knn.pred==Direction.2005)</code></pre>
+<pre><code>## [1] 0.5</code></pre>
+<p>We have very low performance!!. We try with k=3</p>
+<pre class="r"><code>knn.pred3 = knn(train.X,test.X,train.Direction,k=3)
+table(knn.pred3,Direction.2005)</code></pre>
+<pre><code>##          Direction.2005
+## knn.pred3 Down Up
+##      Down   48 54
+##      Up     63 87</code></pre>
+<pre class="r"><code>mean(knn.pred3==Direction.2005)</code></pre>
+<pre><code>## [1] 0.5357143</code></pre>
+<p>A little improvement with k=3. QDA is the best method!!!</p>
+<p>AN APPLICATION TO CARAVAN INSURANCE DATA</p>
+<p>We apply KNN to Caravan dataset (ISLR library).</p>
+<p>We have 85 predictors of demographic charatheristic for 5822 individuals.</p>
+<p>Responce variable –&gt; Purchase –&gt; indicates wheter or not a given individual purchase a caravan insurance policy or not. Only 6% of people purchased caravan insurance.</p>
+<pre class="r"><code>dim(Caravan)</code></pre>
+<pre><code>## [1] 5822   86</code></pre>
+<pre class="r"><code>summary(Caravan$Purchase) #Very unbilanced dataset!!!</code></pre>
+<pre><code>##   No  Yes 
+## 5474  348</code></pre>
+<p>Because KNN classifier predicts the class of a given test observation by identifying the observations that are nearest to it, the scale of the variables is VERY IMPORTANT.</p>
+<p>For example, we have a dataset with two variables (salary and age, measured in dollars and years respectively). A difference of 1000 dollars is enormous comparated to a difference of 50 in year in KNN algorithm–&gt;salary will drive the KNN classification results and age have almost no effect. Also the importance of scale fixes the problem concerning the measures used (salary (jen) year (minutes) vs salary(dollars) year(years)).</p>
+<p>So we scale with standardize the data –&gt;mean zero and standard deviation(1)–&gt;so we change the distribution to approximate a Gaussian (normal) distribution. In this way we have all variable on the same scale.</p>
+<p>To standardize we use the scale() function. We esclude the column 86 (responce and qualitative variable!!!)</p>
+<pre class="r"><code>sapply(Caravan,class) #to verify the type of the data...only purchase is qualitative--&gt; we apply standardize to all variable except purchase!!</code></pre>
+<pre><code>##   MOSTYPE  MAANTHUI   MGEMOMV  MGEMLEEF  MOSHOOFD    MGODRK    MGODPR    MGODOV 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##    MGODGE    MRELGE    MRELSA    MRELOV  MFALLEEN  MFGEKIND  MFWEKIND  MOPLHOOG 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##  MOPLMIDD  MOPLLAAG  MBERHOOG  MBERZELF  MBERBOER  MBERMIDD  MBERARBG  MBERARBO 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##      MSKA     MSKB1     MSKB2      MSKC      MSKD    MHHUUR    MHKOOP     MAUT1 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##     MAUT2     MAUT0   MZFONDS    MZPART   MINKM30  MINK3045  MINK4575  MINK7512 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##  MINK123M   MINKGEM  MKOOPKLA   PWAPART   PWABEDR   PWALAND  PPERSAUT   PBESAUT 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##   PMOTSCO   PVRAAUT  PAANHANG  PTRACTOR    PWERKT     PBROM    PLEVEN  PPERSONG 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##   PGEZONG   PWAOREG    PBRAND   PZEILPL  PPLEZIER    PFIETS   PINBOED  PBYSTAND 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##   AWAPART   AWABEDR   AWALAND  APERSAUT   ABESAUT   AMOTSCO   AVRAAUT  AAANHANG 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##  ATRACTOR    AWERKT     ABROM    ALEVEN  APERSONG   AGEZONG   AWAOREG    ABRAND 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; 
+##   AZEILPL  APLEZIER    AFIETS   AINBOED  ABYSTAND  Purchase 
+## &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot; &quot;numeric&quot;  &quot;factor&quot;</code></pre>
+<pre class="r"><code>standardized.X=scale(Caravan[,1:85,])
+var(Caravan[,1])</code></pre>
+<pre><code>## [1] 165.0378</code></pre>
+<pre class="r"><code>var(Caravan[,2])</code></pre>
+<pre><code>## [1] 0.1647078</code></pre>
+<pre class="r"><code>var(standardized.X[,1]) #Var of standardize var is 1</code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>var(standardized.X[,2]) </code></pre>
+<pre><code>## [1] 1</code></pre>
+<pre class="r"><code>mean(Caravan[,2])</code></pre>
+<pre><code>## [1] 1.110615</code></pre>
+<pre class="r"><code>mean(standardized.X[,2]) #Mean of standardize var is 0</code></pre>
+<pre><code>## [1] -1.470838e-16</code></pre>
+<p>No we split the observations into test set (first 1000 obs) and training set (remaining obs). We fit a model on training data using k=1 and evaluate its perfomance on test data.</p>
+<pre class="r"><code>test_interval = 1:1000
+train.X = standardized.X[-test_interval,] #dim--&gt; [4822,85]
+test.X = standardized.X[test_interval,] #dim--&gt;[1000 ,85]
+train.Y = Caravan$Purchase[-test_interval]
+test.Y = Caravan$Purchase[test_interval]
+set.seed(1)
+knn.pred=knn(train.X,test.X,train.Y,k=1)
+mean(test.Y !=knn.pred) #we have low test error rate!!</code></pre>
+<pre><code>## [1] 0.118</code></pre>
+<pre class="r"><code>mean(test.Y!=&quot;No&quot;) #We have very unbilanced dataset!!! 94% no and 6% yes--&gt; if we use a null classifier that predicts all No--&gt;we obtain 6% error</code></pre>
+<pre><code>## [1] 0.059</code></pre>
+<pre class="r"><code>table(knn.pred,test.Y)</code></pre>
+<pre><code>##         test.Y
+## knn.pred  No Yes
+##      No  873  50
+##      Yes  68   9</code></pre>
+<pre class="r"><code>print(&quot;Error on test set as predicted yes&quot;)</code></pre>
+<pre><code>## [1] &quot;Error on test set as predicted yes&quot;</code></pre>
+<pre class="r"><code>68/(68+9) #An error rate of 88%!!!</code></pre>
+<pre><code>## [1] 0.8831169</code></pre>
+<pre class="r"><code>print(&quot;Correct predicted on test set as predicted yes&quot;)</code></pre>
+<pre><code>## [1] &quot;Correct predicted on test set as predicted yes&quot;</code></pre>
+<pre class="r"><code>9/(68+9) #We have on value predicted ues only 11%predicted in the right way!!</code></pre>
+<pre><code>## [1] 0.1168831</code></pre>
+<p>From the confusion matrix we can check the error rate on all predicted yes is very high!!</p>
+<pre class="r"><code>knn.pred_k3=knn(train.X,test.X,train.Y,k=3)
+table(knn.pred_k3,test.Y)</code></pre>
+<pre><code>##            test.Y
+## knn.pred_k3  No Yes
+##         No  920  54
+##         Yes  21   5</code></pre>
+<pre class="r"><code>print(&quot;Accuracy on predicted yes (k=3)&quot;)</code></pre>
+<pre><code>## [1] &quot;Accuracy on predicted yes (k=3)&quot;</code></pre>
+<pre class="r"><code>5/(5+21)</code></pre>
+<pre><code>## [1] 0.1923077</code></pre>
+<pre class="r"><code>knn.pred_k5=knn(train.X,test.X,train.Y,k=5)
+table(knn.pred_k5,test.Y)</code></pre>
+<pre><code>##            test.Y
+## knn.pred_k5  No Yes
+##         No  930  55
+##         Yes  11   4</code></pre>
+<pre class="r"><code>print(&quot;Accuracy on predicted yes (k=5)&quot;)</code></pre>
+<pre><code>## [1] &quot;Accuracy on predicted yes (k=5)&quot;</code></pre>
+<pre class="r"><code>4/(11+4)</code></pre>
+<pre><code>## [1] 0.2666667</code></pre>
+<p>Now we use a logistic regression</p>
+<pre class="r"><code>glm.fits = glm(Purchase~.,data=Caravan[-test_interval,],family=binomial)
+glm.probs= predict(glm.fits,Caravan[test_interval,],type=&quot;response&quot;)
+glm.pred = rep(&quot;No&quot;,1000)
+glm.pred[glm.probs&gt;0.5]=&quot;Yes&quot;
+table(glm.pred,Caravan$Purchase[test_interval])</code></pre>
+<pre><code>##         
+## glm.pred  No Yes
+##      No  934  59
+##      Yes   7   0</code></pre>
+<pre class="r"><code>#bad performance--&gt; no one obs predicted as yes!!
+glm.pred = rep(&quot;No&quot;,1000)
+glm.pred[glm.probs&gt;0.25]=&quot;Yes&quot;
+table(glm.pred,Caravan$Purchase[test_interval]) </code></pre>
+<pre><code>##         
+## glm.pred  No Yes
+##      No  919  48
+##      Yes  22  11</code></pre>
+<pre class="r"><code>print (&quot;accuracy on predicted yes (probability thershold &gt;0.25)&quot;)</code></pre>
+<pre><code>## [1] &quot;accuracy on predicted yes (probability thershold &gt;0.25)&quot;</code></pre>
+<pre class="r"><code>11/(22+11) #Best performance!! --&gt;33% predicted in the right way!!</code></pre>
+<pre><code>## [1] 0.3333333</code></pre>
 
 
 

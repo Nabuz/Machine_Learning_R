@@ -212,3 +212,141 @@ If we want to predict the market goes down, only if we are very sure that the ma
 sum(lda.pred$posterior[,1]>0.9) #We have zero values beacuse the higher posterior probability of the stock goes down in 2005 is 52.02%!!! 
 ```
 
+Quadratic Discriminant Analysis
+
+We will now fit a QDA model to our Smarket data. 
+
+As lda(), qda() derives from MASS library. Sintax is identical to that of lda()
+
+```{r}
+qda.fit =qda(Direction~Lag1+Lag2,data=Train)
+qda.fit
+```
+
+We don't have the coefficents of the linear  disciminants because the QDA classifier involves a quadratic (and not linear as LDA) function of the predictors.
+
+The predict() works exactly as LDA.
+
+```{r}
+qda.class = predict(qda.fit, Smarket.2005)$class
+table(qda.class,Direction.2005)
+mean(qda.class==Direction.2005)
+```
+
+We have impressive accuracy!!! 60% in predicting the stock market!!
+The QDA capture the true relationship more accurately than LDA and logistic regression.
+
+But pay attention ..test this method on a larger test set before betting QDA approach!!
+
+K-NEAREST NEIGHBORS:
+
+We use the knn() as art of CLASS library
+
+```{r}
+library(class)
+train.X = cbind(Train$Lag1,Train$Lag2)  #We have a matrix with two columns
+test.X = cbind(Smarket.2005$Lag1,Smarket.2005$Lag2)#a matrix with two columns
+train.Direction =Smarket[Smarket$Year != 2005,9]
+```
+```{r}
+set.seed(1) #to set the reproducibility
+knn.pred = knn(train.X,test.X,train.Direction,k=1)
+table(knn.pred,Direction.2005)
+mean(knn.pred==Direction.2005)
+```
+
+We have very low performance!!. We try with k=3
+
+```{r}
+knn.pred3 = knn(train.X,test.X,train.Direction,k=3)
+table(knn.pred3,Direction.2005)
+mean(knn.pred3==Direction.2005)
+```
+
+A little improvement with k=3. QDA is the best method!!!
+
+AN APPLICATION TO CARAVAN INSURANCE DATA
+
+We apply KNN to Caravan dataset (ISLR library).
+
+We have 85 predictors of demographic charatheristic for 5822 individuals.
+
+Responce variable --> Purchase --> indicates wheter or not a given individual purchase a caravan insurance policy or not. Only 6% of people purchased caravan insurance.
+
+```{r}
+dim(Caravan)
+summary(Caravan$Purchase) #Very unbilanced dataset!!!
+```
+
+Because KNN classifier predicts the class of a given test  observation  by identifying the observations that are nearest to it, the scale of the variables is VERY IMPORTANT. 
+
+For example, we have a dataset with two variables (salary and age, measured in dollars and years respectively). A difference of 1000 dollars is enormous comparated to a difference of 50 in year in KNN algorithm-->salary will drive the KNN classification results and age have almost no effect. Also the importance of scale fixes the problem concerning the measures used (salary (jen) year (minutes) vs salary(dollars) year(years)).
+
+So we scale with standardize the data -->mean zero and standard deviation(1)-->so we change the distribution to approximate a Gaussian (normal) distribution. In this way we have all variable on the same scale.
+
+To standardize we use the scale() function. We esclude the column 86 (responce and qualitative variable!!!)
+
+```{r}
+sapply(Caravan,class) #to verify the type of the data...only purchase is qualitative--> we apply standardize to all variable except purchase!!
+standardized.X=scale(Caravan[,1:85,])
+var(Caravan[,1])
+var(Caravan[,2])
+var(standardized.X[,1]) #Var of standardize var is 1
+var(standardized.X[,2]) 
+mean(Caravan[,2])
+mean(standardized.X[,2]) #Mean of standardize var is 0
+```
+
+No we split the observations into test set (first 1000 obs) and training set (remaining obs). 
+We fit a model on training data using k=1 and evaluate its perfomance on test data.
+
+```{r}
+test_interval = 1:1000
+train.X = standardized.X[-test_interval,] #dim--> [4822,85]
+test.X = standardized.X[test_interval,] #dim-->[1000 ,85]
+train.Y = Caravan$Purchase[-test_interval]
+test.Y = Caravan$Purchase[test_interval]
+set.seed(1)
+knn.pred=knn(train.X,test.X,train.Y,k=1)
+mean(test.Y !=knn.pred) #we have low test error rate!!
+mean(test.Y!="No") #We have very unbilanced dataset!!! 94% no and 6% yes--> if we use a null classifier that predicts all No-->we obtain 6% error
+```
+
+
+```{r}
+table(knn.pred,test.Y)
+print("Error on test set as predicted yes")
+68/(68+9) #An error rate of 88%!!!
+print("Correct predicted on test set as predicted yes")
+9/(68+9) #We have on value predicted ues only 11%predicted in the right way!!
+```
+
+From the confusion matrix we can check the error rate on all predicted yes is very high!!
+
+```{r}
+knn.pred_k3=knn(train.X,test.X,train.Y,k=3)
+table(knn.pred_k3,test.Y)
+print("Accuracy on predicted yes (k=3)")
+5/(5+21)
+knn.pred_k5=knn(train.X,test.X,train.Y,k=5)
+table(knn.pred_k5,test.Y)
+print("Accuracy on predicted yes (k=5)")
+4/(11+4)
+```
+
+Now we use a logistic regression
+
+```{r}
+glm.fits = glm(Purchase~.,data=Caravan[-test_interval,],family=binomial)
+glm.probs= predict(glm.fits,Caravan[test_interval,],type="response")
+glm.pred = rep("No",1000)
+glm.pred[glm.probs>0.5]="Yes"
+table(glm.pred,Caravan$Purchase[test_interval])
+#bad performance--> no one obs predicted as yes!!
+glm.pred = rep("No",1000)
+glm.pred[glm.probs>0.25]="Yes"
+table(glm.pred,Caravan$Purchase[test_interval]) 
+print ("accuracy on predicted yes (probability thershold >0.25)")
+11/(22+11) #Best performance!! -->33% predicted in the right way!!
+```
+
