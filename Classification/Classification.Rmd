@@ -47,7 +47,7 @@ Now we fit a logistic regression to predict the Direction using Lag1-Lag5 and Vo
 
 glm()-->generalized linear models, a class of model that includes the logistic regression.
 ```{r}
-glm.fits = glm(Direction~Lag1+Lag2*Lag3+Lag4+Lag5*Volume,data = Smarket,family=binomial)
+glm.fits = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data = Smarket,family=binomial)
 #family=binomial tells R to use logistic regression among the class of generalized linear model.
 summary(glm.fits)
 ```
@@ -348,5 +348,323 @@ glm.pred[glm.probs>0.25]="Yes"
 table(glm.pred,Caravan$Purchase[test_interval]) 
 print ("accuracy on predicted yes (probability thershold >0.25)")
 11/(22+11) #Best performance!! -->33% predicted in the right way!!
+```
+
+EXERCISES EXECUTES BY MYSELF
+
+Now we use the Weekly dataset (ISLR package). It's similar to Smarket ecept contains 1089 weekly returns for 21 years (1990-2010)
+
+```{r}
+library(ISLR)
+Weekly[1:5,]
+names(Weekly)
+```
+
+Produce some numerical and graphical summaries of the Weekly data, do there appear to be any pattern ?
+
+```{r}
+contrasts(Weekly$Direction) #Up =1, Down= 0
+```
+```{r}
+plot(Weekly) #There is some kind of relation between Volume and Year from plot
+```
+
+```{r}
+library(corrplot)
+corrplot(cor(Weekly[,1:8]),method="circle",type= "upper") #With correlation graph we can see the correlation between Year and Volume!!!
+```
+
+Use the full dataset to perform a Logistic Regression with Direction as the responce and file lag variables plus Volume as predictors. Do any of the predictors appear to be statistically significant ?
+
+```{r}
+glm.fits = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data =Weekly,family=binomial)
+summary(glm.fits)
+```
+
+Predictors statistically relevant : (intercept) and Lag2. 
+Lag2: if it increases by 1% in return the log-odd (logit)  increases,by average, by 0.06%--> the probability that the market goes up increases. 
+
+Compute the confusion matrix and overall fraction of correct predictions. Explain the type of mistakes made by logistic regression.
+
+```{r}
+glm.probs = predict(glm.fits, type="response")
+glm.pred=rep("Down",1089)
+glm.pred[glm.probs>0.5] ="Up"
+table(glm.pred,Weekly$Direction)
+```
+```{r}
+print("Overall fraction of correct prediction")
+(54+557)/(54+557+48+430)
+print("Error rate on predicted true (Up)")
+430/(430+557) #The fraction of False Positive on all predicted positive
+print ("Error rate on predicted false (Down)")
+48/(48+54) #Fraction of False negative on all predicted negative
+```
+
+Now fit the logistic regression model using a training data period (1990 to 2008) with Lag2 as the only predictor. compute the confusion matrix and the overall fraction of correct prediction (our Test set--> 2009 to 2010).
+
+```{r}
+Train = Weekly[Weekly$Year>=1990 & Weekly$Year<2009,]
+Test = Weekly[Weekly$Year>2008,]
+glm.fits = glm(Direction~Lag2,data =Train,family=binomial)
+summary(glm.fits)
+```
+
+```{r}
+glm.probs = predict(glm.fits,Test, type="response")
+glm.pred=rep("Down",104)
+glm.pred[glm.probs>0.5] ="Up"
+table(glm.pred,Test$Direction)
+```
+
+```{r}
+print("Overall error rate on test set")
+(34+5)/(9+5+34+56)
+print("Error rate on positive predictions")
+(34)/(34+56)
+print("Error rate on negative predictions")
+(5)/(9+5)
+```
+
+Repeat using LDA
+
+```{r}
+library(MASS) #to load lda()
+lda.fits = lda(Direction~Lag2,data =Train)
+lda.fits
+```
+```{r}
+lda.pred=predict(lda.fits, Test)
+lda.class = lda.pred$class
+table(lda.class,Test$Direction)
+```
+
+```{r}
+print("Error rate on test set")
+(34+5)/(9+5+34+56)
+print("Error rate on predicted true (Up)")
+(34)/(34+56)
+print("Error rate on predicted False (Down)")
+(5)/(9+5)
+```
+
+Repeat using QDA
+
+```{r}
+qda.fits = qda(Direction~Lag2,data =Train)
+qda.fits
+```
+
+```{r}
+qda.class=predict(qda.fits, Test)$class
+table(qda.class,Test$Direction)
+```
+
+
+Why zero values for True False and False Negative ???
+```{r}
+print("Total test error with QDA")
+mean(qda.class!=Test$Direction)
+
+
+```
+
+Repeat with KNN algorithm
+
+```{r}
+library(class)
+set.seed(1)
+knn.pred = knn(data.frame(Train$Lag2),data.frame(Test$Lag2),Train$Direction,k=1) #USe data.frame() or you error!!
+table(knn.pred,Test$Direction)
+```
+```{r}
+print("Total Error rate in test set")
+(30+22)/(21+30+22+31)
+print("Error rate on positive prediction")
+(22)/(22+31)
+print("Error rate on negative prediction")
+(30)/(21+30)
+```
+
+We wil develop a model to predict wheter a given car gets high or low gas mileage (Auto dataset).
+
+Create a binary variable, mpg01 with 1 if mpg above the median and 0 if below the median.
+```{r}
+Auto1 = Auto
+Auto1$mpg01 = ifelse(Auto$mpg >=median(Auto$mpg), 1, 0)
+```
+Explore the data graphically in order to investigate the association between mpg01 and other features. Which other of other features seem most likely to be useful in predicting mpg01? Use scatterplots and boxplots.
+```{r}
+plot(Auto1) #Some relation between horsepower, weiht , acceleration and mpg01
+```
+
+```{r}
+boxplot(displacement~mpg01, data=Auto1, main="Displacement over  high/low fuel consumption (mpg)",xlab="mpg01",ylab="Displacement",col="orange",border ="brown")  #Strong relation between Displacement and horsepower
+```
+
+```{r}
+boxplot(horsepower~mpg01, data=Auto1, main="Horsepower over high/low fuel consumption (mpg)",xlab="mpg01",ylab="Horsepower",col="orange",border ="brown")  #Strong relation between Horsepower and horsepower
+```
+
+```{r}
+boxplot(acceleration~mpg01, data=Auto1, main="Acceleration over high/low fuel consumption (mpg)",xlab="mpg01",ylab="Acceleration",col="orange",border ="brown")  #Quite strong relation between Acceleration and horsepower
+```
+
+Divide the dataset Auto1 in Train set and Test set
+
+```{r}
+#We split in 70% train and 30% test, taking randomly values from Auto1
+train_index= sample(1:nrow(Auto1),0.7*nrow(Auto1)) #we have the same almost the same class ratio 50/50 from Auto1
+test_index = setdiff(1:nrow(Auto1),train_index)#same class ratio from Auto1 50/50
+
+Train = Auto1[train_index,] 
+Test =Auto1[test_index,]
+```
+
+Perform LDA on training data with responce --> mpg01 with predictor --> more correlated from scatterplot/boxplot (Displacement,Horsepower,Acceleration). 
+Calculate the test error.
+```{r}
+library(MASS)
+lda.fits = lda(mpg01~acceleration+displacement+horsepower,data =Train)
+lda.fits
+```
+```{r}
+lda.pred=predict(lda.fits, Test)
+lda.class = lda.pred$class
+table(lda.class,Test$mpg01)
+print("The test error is")
+mean(lda.class!=Test$mpg01)
+```
+
+Good performance , in particular the performance on predicted true (low consumption cars)
+
+Perform QDA on training data in order to predict mpg01 using variables that seemed most associated with mpg01 (Acceleration, Displacement,Horsepower).
+
+What is the test error rate ?
+```{r}
+qda.fits = qda(mpg01~acceleration+displacement+horsepower,data =Train)
+qda.fits
+```
+```{r}
+qda.pred=predict(qda.fits, Test)
+qda.class = qda.pred$class
+table(qda.class,Test$mpg01)
+print("The test error is")
+mean(qda.class!=Test$mpg01)
+```
+
+We have better test error performance than LDA. In particular correct prediction on total positive predicted.
+
+Perform logistic regression and do the same thing as before.
+```{r}
+glm.fits = glm(mpg01~acceleration+displacement+horsepower,data =Train,family=binomial)
+summary(glm.fits)
+```
+
+All feature are statistically significative. As we increase the 3 variable by one unit, on average, there is a decreasing to predict "low consume fuel" car. In particular the acceleration is decisive if increases.
+
+```{r}
+glm.probs=predict(glm.fits,Test,type="response")
+glm.pred=rep(0,118) #We create an array with 1250 values, fills with "Down"
+glm.pred[glm.probs>0.5] = 1
+table(glm.pred,Test$mpg01)
+```
+
+```{r}
+print("The test error rate ")
+mean(glm.pred!=Test$mpg01)
+```
+
+Try the same as above with RNN model
+```{r}
+#We need to have the predictors (horsepower,acceleration and displacement) on the same scale. WEe do standardization-->value with same distribution (mean=0 var=1) and same scale.
+Train_std=scale(data.frame(Train$displacement,Train$horsepower,Train$acceleration))
+Test_std=scale(data.frame(Test$displacement,Test$horsepower,Test$acceleration))
+```
+
+```{r}
+set.seed(1)
+knn.pred = knn(Train_std,Test_std,Train$mpg01,k=1) #USe data.frame() or you error!!
+table(knn.pred,Test$mpg01)
+```
+```{r}
+print("Test error is")
+mean(knn.pred!=Test$mpg01)
+```
+
+We try KNN with k=3
+```{r}
+knn.pred = knn(Train_std,Test_std,Train$mpg01,k=3) #Use data.frame() or you error!!
+table(knn.pred,Test$mpg01)
+```
+```{r}
+print("Test error is")
+mean(knn.pred!=Test$mpg01)
+```
+
+We try KNN with k=5
+
+```{r}
+knn.pred = knn(Train_std,Test_std,Train$mpg01,k=5) #Use data.frame() or you error!!
+table(knn.pred,Test$mpg01)
+```
+```{r}
+print("Test error is")
+mean(knn.pred!=Test$mpg01)
+```
+
+We have best performance with QDA (total test error: 11%)
+
+Write a function Power() that prints out the result of raising 2 the 3rd power. In other words your function should compute 2^3 and print out the results
+
+```{r}
+Power = function()
+{
+res = 2^3
+sprintf("2^3 = %d",res)
+}
+```
+```{r}
+Power()
+
+```
+
+Create a new function, Power2(), that allows you to pass any number,x and a, and calculate x^a.
+
+```{r}
+Power2 =function(x,a)
+{
+res = x^a
+sprintf("x^a = %f",res)
+}
+```
+```{r}
+Power2(131,3)
+```
+
+```{r}
+Power3 = function(log="")
+{
+x_axis= 1:10
+y_axis= x_axis^2
+plot(x_axis,y_axis,log= log,xlab="X",ylab="X^2",main="Y=X^2")
+}
+```
+```{r}
+Power3("y")
+```
+
+Create a function PlotPower(), that allows you to create a plot of x against x^a for a fixed a and for a range of values of x. For instance the function with parameters -->PlotPower(1:10,3).
+
+```{r}
+PlotPower = function(range,power)
+{
+x_axis= range
+y_axis= x_axis^power
+plot(x_axis,y_axis,xlab="X",ylab=paste("X^",as.character(power),sep=""),main=paste("Y=X^",as.character(power),sep=""))
+}
+```
+```{r}
+PlotPower(1:15,3)
 ```
 

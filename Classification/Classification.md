@@ -93,7 +93,7 @@ Now we fit a logistic regression to predict the Direction using Lag1-Lag5 and Vo
 glm()-->generalized linear models, a class of model that includes the logistic regression.
 
 ```r
-glm.fits = glm(Direction~Lag1+Lag2*Lag3+Lag4+Lag5*Volume,data = Smarket,family=binomial)
+glm.fits = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data = Smarket,family=binomial)
 #family=binomial tells R to use logistic regression among the class of generalized linear model.
 summary(glm.fits)
 ```
@@ -101,30 +101,28 @@ summary(glm.fits)
 ```
 ## 
 ## Call:
-## glm(formula = Direction ~ Lag1 + Lag2 * Lag3 + Lag4 + Lag5 * 
+## glm(formula = Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + 
 ##     Volume, family = binomial, data = Smarket)
 ## 
 ## Deviance Residuals: 
 ##    Min      1Q  Median      3Q     Max  
-## -1.528  -1.204   1.059   1.145   1.378  
+## -1.446  -1.203   1.065   1.145   1.326  
 ## 
 ## Coefficients:
-##             Estimate Std. Error z value Pr(>|z|)
-## (Intercept) -0.11385    0.24153  -0.471    0.637
-## Lag1        -0.07338    0.05021  -1.462    0.144
-## Lag2        -0.03774    0.05060  -0.746    0.456
-## Lag3         0.01291    0.05010   0.258    0.797
-## Lag4         0.01029    0.05009   0.205    0.837
-## Lag5         0.10296    0.22410   0.459    0.646
-## Volume       0.12726    0.15894   0.801    0.423
-## Lag2:Lag3    0.01822    0.03418   0.533    0.594
-## Lag5:Volume -0.06430    0.14767  -0.435    0.663
+##              Estimate Std. Error z value Pr(>|z|)
+## (Intercept) -0.126000   0.240736  -0.523    0.601
+## Lag1        -0.073074   0.050167  -1.457    0.145
+## Lag2        -0.042301   0.050086  -0.845    0.398
+## Lag3         0.011085   0.049939   0.222    0.824
+## Lag4         0.009359   0.049974   0.187    0.851
+## Lag5         0.010313   0.049511   0.208    0.835
+## Volume       0.135441   0.158360   0.855    0.392
 ## 
 ## (Dispersion parameter for binomial family taken to be 1)
 ## 
 ##     Null deviance: 1731.2  on 1249  degrees of freedom
-## Residual deviance: 1727.1  on 1241  degrees of freedom
-## AIC: 1745.1
+## Residual deviance: 1727.6  on 1243  degrees of freedom
+## AIC: 1741.6
 ## 
 ## Number of Fisher Scoring iterations: 3
 ```
@@ -142,9 +140,9 @@ glm.probs[1:10]
 
 ```
 ##         1         2         3         4         5         6         7         8 
-## 0.5283640 0.4787417 0.4828446 0.5213932 0.5097990 0.5075475 0.4935325 0.5122652 
+## 0.5070841 0.4814679 0.4811388 0.5152224 0.5107812 0.5069565 0.4926509 0.5092292 
 ##         9        10 
-## 0.5186681 0.4900873
+## 0.5176135 0.4888378
 ```
 
 ```r
@@ -175,8 +173,8 @@ table(glm.pred,Smarket$Direction)
 ```
 ##         
 ## glm.pred Down  Up
-##     Down  148 129
-##     Up    454 519
+##     Down  145 141
+##     Up    457 507
 ```
 
 
@@ -193,7 +191,7 @@ mean(glm.pred==Smarket$Direction) #Equivalent to : (148 + 519)/1250
 ```
 
 ```
-## [1] 0.5336
+## [1] 0.5216
 ```
 
 Could be that the logistic regression is better than a "by chance" classificator (Accuracy -->0.5). It's no true!! We are predicting our values on training set-->to optiomistic setting!! Try to setup a more realistic setting (fitting on traing set and test on test set).
@@ -211,7 +209,7 @@ mean(glm.pred!=Smarket$Direction)
 ```
 
 ```
-## [1] 0.4664
+## [1] 0.4784
 ```
 
 ```r
@@ -930,4 +928,878 @@ print ("accuracy on predicted yes (probability thershold >0.25)")
 ```
 ## [1] 0.3333333
 ```
+
+EXERCISES EXECUTES BY MYSELF
+
+Now we use the Weekly dataset (ISLR package). It's similar to Smarket ecept contains 1089 weekly returns for 21 years (1990-2010)
+
+
+```r
+library(ISLR)
+Weekly[1:5,]
+```
+
+```
+##   Year   Lag1   Lag2   Lag3   Lag4   Lag5    Volume  Today Direction
+## 1 1990  0.816  1.572 -3.936 -0.229 -3.484 0.1549760 -0.270      Down
+## 2 1990 -0.270  0.816  1.572 -3.936 -0.229 0.1485740 -2.576      Down
+## 3 1990 -2.576 -0.270  0.816  1.572 -3.936 0.1598375  3.514        Up
+## 4 1990  3.514 -2.576 -0.270  0.816  1.572 0.1616300  0.712        Up
+## 5 1990  0.712  3.514 -2.576 -0.270  0.816 0.1537280  1.178        Up
+```
+
+```r
+names(Weekly)
+```
+
+```
+## [1] "Year"      "Lag1"      "Lag2"      "Lag3"      "Lag4"      "Lag5"     
+## [7] "Volume"    "Today"     "Direction"
+```
+
+Produce some numerical and graphical summaries of the Weekly data, do there appear to be any pattern ?
+
+
+```r
+contrasts(Weekly$Direction) #Up =1, Down= 0
+```
+
+```
+##      Up
+## Down  0
+## Up    1
+```
+
+```r
+plot(Weekly) #There is some kind of relation between Volume and Year from plot
+```
+
+![](README_figs/README-unnamed-chunk-41-1.png)<!-- -->
+
+
+```r
+library(corrplot)
+corrplot(cor(Weekly[,1:8]),method="circle",type= "upper") #With correlation graph we can see the correlation between Year and Volume!!!
+```
+
+![](README_figs/README-unnamed-chunk-42-1.png)<!-- -->
+
+Use the full dataset to perform a Logistic Regression with Direction as the responce and file lag variables plus Volume as predictors. Do any of the predictors appear to be statistically significant ?
+
+
+```r
+glm.fits = glm(Direction~Lag1+Lag2+Lag3+Lag4+Lag5+Volume,data =Weekly,family=binomial)
+summary(glm.fits)
+```
+
+```
+## 
+## Call:
+## glm(formula = Direction ~ Lag1 + Lag2 + Lag3 + Lag4 + Lag5 + 
+##     Volume, family = binomial, data = Weekly)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -1.6949  -1.2565   0.9913   1.0849   1.4579  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(>|z|)   
+## (Intercept)  0.26686    0.08593   3.106   0.0019 **
+## Lag1        -0.04127    0.02641  -1.563   0.1181   
+## Lag2         0.05844    0.02686   2.175   0.0296 * 
+## Lag3        -0.01606    0.02666  -0.602   0.5469   
+## Lag4        -0.02779    0.02646  -1.050   0.2937   
+## Lag5        -0.01447    0.02638  -0.549   0.5833   
+## Volume      -0.02274    0.03690  -0.616   0.5377   
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1496.2  on 1088  degrees of freedom
+## Residual deviance: 1486.4  on 1082  degrees of freedom
+## AIC: 1500.4
+## 
+## Number of Fisher Scoring iterations: 4
+```
+
+Predictors statistically relevant : (intercept) and Lag2. 
+Lag2: if it increases by 1% in return the log-odd (logit)  increases,by average, by 0.06%--> the probability that the market goes up increases. 
+
+Compute the confusion matrix and overall fraction of correct predictions. Explain the type of mistakes made by logistic regression.
+
+
+```r
+glm.probs = predict(glm.fits, type="response")
+glm.pred=rep("Down",1089)
+glm.pred[glm.probs>0.5] ="Up"
+table(glm.pred,Weekly$Direction)
+```
+
+```
+##         
+## glm.pred Down  Up
+##     Down   54  48
+##     Up    430 557
+```
+
+```r
+print("Overall fraction of correct prediction")
+```
+
+```
+## [1] "Overall fraction of correct prediction"
+```
+
+```r
+(54+557)/(54+557+48+430)
+```
+
+```
+## [1] 0.5610652
+```
+
+```r
+print("Error rate on predicted true (Up)")
+```
+
+```
+## [1] "Error rate on predicted true (Up)"
+```
+
+```r
+430/(430+557) #The fraction of False Positive on all predicted positive
+```
+
+```
+## [1] 0.4356636
+```
+
+```r
+print ("Error rate on predicted false (Down)")
+```
+
+```
+## [1] "Error rate on predicted false (Down)"
+```
+
+```r
+48/(48+54) #Fraction of False negative on all predicted negative
+```
+
+```
+## [1] 0.4705882
+```
+
+Now fit the logistic regression model using a training data period (1990 to 2008) with Lag2 as the only predictor. compute the confusion matrix and the overall fraction of correct prediction (our Test set--> 2009 to 2010).
+
+
+```r
+Train = Weekly[Weekly$Year>=1990 & Weekly$Year<2009,]
+Test = Weekly[Weekly$Year>2008,]
+glm.fits = glm(Direction~Lag2,data =Train,family=binomial)
+summary(glm.fits)
+```
+
+```
+## 
+## Call:
+## glm(formula = Direction ~ Lag2, family = binomial, data = Train)
+## 
+## Deviance Residuals: 
+##    Min      1Q  Median      3Q     Max  
+## -1.536  -1.264   1.021   1.091   1.368  
+## 
+## Coefficients:
+##             Estimate Std. Error z value Pr(>|z|)   
+## (Intercept)  0.20326    0.06428   3.162  0.00157 **
+## Lag2         0.05810    0.02870   2.024  0.04298 * 
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 1354.7  on 984  degrees of freedom
+## Residual deviance: 1350.5  on 983  degrees of freedom
+## AIC: 1354.5
+## 
+## Number of Fisher Scoring iterations: 4
+```
+
+
+```r
+glm.probs = predict(glm.fits,Test, type="response")
+glm.pred=rep("Down",104)
+glm.pred[glm.probs>0.5] ="Up"
+table(glm.pred,Test$Direction)
+```
+
+```
+##         
+## glm.pred Down Up
+##     Down    9  5
+##     Up     34 56
+```
+
+
+```r
+print("Overall error rate on test set")
+```
+
+```
+## [1] "Overall error rate on test set"
+```
+
+```r
+(34+5)/(9+5+34+56)
+```
+
+```
+## [1] 0.375
+```
+
+```r
+print("Error rate on positive predictions")
+```
+
+```
+## [1] "Error rate on positive predictions"
+```
+
+```r
+(34)/(34+56)
+```
+
+```
+## [1] 0.3777778
+```
+
+```r
+print("Error rate on negative predictions")
+```
+
+```
+## [1] "Error rate on negative predictions"
+```
+
+```r
+(5)/(9+5)
+```
+
+```
+## [1] 0.3571429
+```
+
+Repeat using LDA
+
+
+```r
+library(MASS) #to load lda()
+lda.fits = lda(Direction~Lag2,data =Train)
+lda.fits
+```
+
+```
+## Call:
+## lda(Direction ~ Lag2, data = Train)
+## 
+## Prior probabilities of groups:
+##      Down        Up 
+## 0.4477157 0.5522843 
+## 
+## Group means:
+##             Lag2
+## Down -0.03568254
+## Up    0.26036581
+## 
+## Coefficients of linear discriminants:
+##            LD1
+## Lag2 0.4414162
+```
+
+```r
+lda.pred=predict(lda.fits, Test)
+lda.class = lda.pred$class
+table(lda.class,Test$Direction)
+```
+
+```
+##          
+## lda.class Down Up
+##      Down    9  5
+##      Up     34 56
+```
+
+
+```r
+print("Error rate on test set")
+```
+
+```
+## [1] "Error rate on test set"
+```
+
+```r
+(34+5)/(9+5+34+56)
+```
+
+```
+## [1] 0.375
+```
+
+```r
+print("Error rate on predicted true (Up)")
+```
+
+```
+## [1] "Error rate on predicted true (Up)"
+```
+
+```r
+(34)/(34+56)
+```
+
+```
+## [1] 0.3777778
+```
+
+```r
+print("Error rate on predicted False (Down)")
+```
+
+```
+## [1] "Error rate on predicted False (Down)"
+```
+
+```r
+(5)/(9+5)
+```
+
+```
+## [1] 0.3571429
+```
+
+Repeat using QDA
+
+
+```r
+qda.fits = qda(Direction~Lag2,data =Train)
+qda.fits
+```
+
+```
+## Call:
+## qda(Direction ~ Lag2, data = Train)
+## 
+## Prior probabilities of groups:
+##      Down        Up 
+## 0.4477157 0.5522843 
+## 
+## Group means:
+##             Lag2
+## Down -0.03568254
+## Up    0.26036581
+```
+
+
+```r
+qda.class=predict(qda.fits, Test)$class
+table(qda.class,Test$Direction)
+```
+
+```
+##          
+## qda.class Down Up
+##      Down    0  0
+##      Up     43 61
+```
+
+
+Why zero values for True False and False Negative ???
+
+```r
+print("Total test error with QDA")
+```
+
+```
+## [1] "Total test error with QDA"
+```
+
+```r
+mean(qda.class!=Test$Direction)
+```
+
+```
+## [1] 0.4134615
+```
+
+Repeat with KNN algorithm
+
+
+```r
+library(class)
+set.seed(1)
+knn.pred = knn(data.frame(Train$Lag2),data.frame(Test$Lag2),Train$Direction,k=1) #USe data.frame() or you error!!
+table(knn.pred,Test$Direction)
+```
+
+```
+##         
+## knn.pred Down Up
+##     Down   21 30
+##     Up     22 31
+```
+
+```r
+print("Total Error rate in test set")
+```
+
+```
+## [1] "Total Error rate in test set"
+```
+
+```r
+(30+22)/(21+30+22+31)
+```
+
+```
+## [1] 0.5
+```
+
+```r
+print("Error rate on positive prediction")
+```
+
+```
+## [1] "Error rate on positive prediction"
+```
+
+```r
+(22)/(22+31)
+```
+
+```
+## [1] 0.4150943
+```
+
+```r
+print("Error rate on negative prediction")
+```
+
+```
+## [1] "Error rate on negative prediction"
+```
+
+```r
+(30)/(21+30)
+```
+
+```
+## [1] 0.5882353
+```
+
+We wil develop a model to predict wheter a given car gets high or low gas mileage (Auto dataset).
+
+Create a binary variable, mpg01 with 1 if mpg above the median and 0 if below the median.
+
+```r
+Auto1 = Auto
+Auto1$mpg01 = ifelse(Auto$mpg >=median(Auto$mpg), 1, 0)
+```
+Explore the data graphically in order to investigate the association between mpg01 and other features. Which other of other features seem most likely to be useful in predicting mpg01? Use scatterplots and boxplots.
+
+```r
+plot(Auto1) #Some relation between horsepower, weiht , acceleration and mpg01
+```
+
+![](README_figs/README-unnamed-chunk-58-1.png)<!-- -->
+
+
+```r
+boxplot(displacement~mpg01, data=Auto1, main="Displacement over  high/low fuel consumption (mpg)",xlab="mpg01",ylab="Displacement",col="orange",border ="brown")  #Strong relation between Displacement and horsepower
+```
+
+![](README_figs/README-unnamed-chunk-59-1.png)<!-- -->
+
+
+```r
+boxplot(horsepower~mpg01, data=Auto1, main="Horsepower over high/low fuel consumption (mpg)",xlab="mpg01",ylab="Horsepower",col="orange",border ="brown")  #Strong relation between Horsepower and horsepower
+```
+
+![](README_figs/README-unnamed-chunk-60-1.png)<!-- -->
+
+
+```r
+boxplot(acceleration~mpg01, data=Auto1, main="Acceleration over high/low fuel consumption (mpg)",xlab="mpg01",ylab="Acceleration",col="orange",border ="brown")  #Quite strong relation between Acceleration and horsepower
+```
+
+![](README_figs/README-unnamed-chunk-61-1.png)<!-- -->
+
+Divide the dataset Auto1 in Train set and Test set
+
+
+```r
+#We split in 70% train and 30% test, taking randomly values from Auto1
+train_index= sample(1:nrow(Auto1),0.7*nrow(Auto1)) #we have the same almost the same class ratio 50/50 from Auto1
+test_index = setdiff(1:nrow(Auto1),train_index)#same class ratio from Auto1 50/50
+
+Train = Auto1[train_index,] 
+Test =Auto1[test_index,]
+```
+
+Perform LDA on training data with responce --> mpg01 with predictor --> more correlated from scatterplot/boxplot (Displacement,Horsepower,Acceleration). 
+Calculate the test error.
+
+```r
+library(MASS)
+lda.fits = lda(mpg01~acceleration+displacement+horsepower,data =Train)
+lda.fits
+```
+
+```
+## Call:
+## lda(mpg01 ~ acceleration + displacement + horsepower, data = Train)
+## 
+## Prior probabilities of groups:
+##         0         1 
+## 0.4744526 0.5255474 
+## 
+## Group means:
+##   acceleration displacement horsepower
+## 0     14.71462     263.5923  128.82308
+## 1     16.45139     114.5868   78.53472
+## 
+## Coefficients of linear discriminants:
+##                      LD1
+## acceleration -0.10190951
+## displacement -0.01171459
+## horsepower   -0.01296043
+```
+
+```r
+lda.pred=predict(lda.fits, Test)
+lda.class = lda.pred$class
+table(lda.class,Test$mpg01)
+```
+
+```
+##          
+## lda.class  0  1
+##         0 60  2
+##         1  6 50
+```
+
+```r
+print("The test error is")
+```
+
+```
+## [1] "The test error is"
+```
+
+```r
+mean(lda.class!=Test$mpg01)
+```
+
+```
+## [1] 0.06779661
+```
+
+Good performance , in particular the performance on predicted true (low consumption cars)
+
+Perform QDA on training data in order to predict mpg01 using variables that seemed most associated with mpg01 (Acceleration, Displacement,Horsepower).
+
+What is the test error rate ?
+
+```r
+qda.fits = qda(mpg01~acceleration+displacement+horsepower,data =Train)
+qda.fits
+```
+
+```
+## Call:
+## qda(mpg01 ~ acceleration + displacement + horsepower, data = Train)
+## 
+## Prior probabilities of groups:
+##         0         1 
+## 0.4744526 0.5255474 
+## 
+## Group means:
+##   acceleration displacement horsepower
+## 0     14.71462     263.5923  128.82308
+## 1     16.45139     114.5868   78.53472
+```
+
+```r
+qda.pred=predict(qda.fits, Test)
+qda.class = qda.pred$class
+table(qda.class,Test$mpg01)
+```
+
+```
+##          
+## qda.class  0  1
+##         0 62  4
+##         1  4 48
+```
+
+```r
+print("The test error is")
+```
+
+```
+## [1] "The test error is"
+```
+
+```r
+mean(qda.class!=Test$mpg01)
+```
+
+```
+## [1] 0.06779661
+```
+
+We have better test error performance than LDA. In particular correct prediction on total positive predicted.
+
+Perform logistic regression and do the same thing as before.
+
+```r
+glm.fits = glm(mpg01~acceleration+displacement+horsepower,data =Train,family=binomial)
+summary(glm.fits)
+```
+
+```
+## 
+## Call:
+## glm(formula = mpg01 ~ acceleration + displacement + horsepower, 
+##     family = binomial, data = Train)
+## 
+## Deviance Residuals: 
+##     Min       1Q   Median       3Q      Max  
+## -2.4503  -0.1408   0.1321   0.4008   3.6949  
+## 
+## Coefficients:
+##               Estimate Std. Error z value Pr(>|z|)    
+## (Intercept)  17.073808   3.405011   5.014 5.32e-07 ***
+## acceleration -0.293248   0.123237  -2.380   0.0173 *  
+## displacement -0.018514   0.004608  -4.018 5.87e-05 ***
+## horsepower   -0.098532   0.021294  -4.627 3.70e-06 ***
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## (Dispersion parameter for binomial family taken to be 1)
+## 
+##     Null deviance: 379.13  on 273  degrees of freedom
+## Residual deviance: 148.44  on 270  degrees of freedom
+## AIC: 156.44
+## 
+## Number of Fisher Scoring iterations: 7
+```
+
+All feature are statistically significative. As we increase the 3 variable by one unit, on average, there is a decreasing to predict "low consume fuel" car. In particular the acceleration is decisive if increases.
+
+
+```r
+glm.probs=predict(glm.fits,Test,type="response")
+glm.pred=rep(0,118) #We create an array with 1250 values, fills with "Down"
+glm.pred[glm.probs>0.5] = 1
+table(glm.pred,Test$mpg01)
+```
+
+```
+##         
+## glm.pred  0  1
+##        0 62  7
+##        1  4 45
+```
+
+
+```r
+print("The test error rate ")
+```
+
+```
+## [1] "The test error rate "
+```
+
+```r
+mean(glm.pred!=Test$mpg01)
+```
+
+```
+## [1] 0.09322034
+```
+
+Try the same as above with RNN model
+
+```r
+#We need to have the predictors (horsepower,acceleration and displacement) on the same scale. WEe do standardization-->value with same distribution (mean=0 var=1) and same scale.
+Train_std=scale(data.frame(Train$displacement,Train$horsepower,Train$acceleration))
+Test_std=scale(data.frame(Test$displacement,Test$horsepower,Test$acceleration))
+```
+
+
+```r
+set.seed(1)
+knn.pred = knn(Train_std,Test_std,Train$mpg01,k=1) #USe data.frame() or you error!!
+table(knn.pred,Test$mpg01)
+```
+
+```
+##         
+## knn.pred  0  1
+##        0 57  6
+##        1  9 46
+```
+
+```r
+print("Test error is")
+```
+
+```
+## [1] "Test error is"
+```
+
+```r
+mean(knn.pred!=Test$mpg01)
+```
+
+```
+## [1] 0.1271186
+```
+
+We try KNN with k=3
+
+```r
+knn.pred = knn(Train_std,Test_std,Train$mpg01,k=3) #Use data.frame() or you error!!
+table(knn.pred,Test$mpg01)
+```
+
+```
+##         
+## knn.pred  0  1
+##        0 59  5
+##        1  7 47
+```
+
+```r
+print("Test error is")
+```
+
+```
+## [1] "Test error is"
+```
+
+```r
+mean(knn.pred!=Test$mpg01)
+```
+
+```
+## [1] 0.1016949
+```
+
+We try KNN with k=5
+
+
+```r
+knn.pred = knn(Train_std,Test_std,Train$mpg01,k=5) #Use data.frame() or you error!!
+table(knn.pred,Test$mpg01)
+```
+
+```
+##         
+## knn.pred  0  1
+##        0 57  3
+##        1  9 49
+```
+
+```r
+print("Test error is")
+```
+
+```
+## [1] "Test error is"
+```
+
+```r
+mean(knn.pred!=Test$mpg01)
+```
+
+```
+## [1] 0.1016949
+```
+
+We have best performance with QDA (total test error: 11%)
+
+Write a function Power() that prints out the result of raising 2 the 3rd power. In other words your function should compute 2^3 and print out the results
+
+
+```r
+Power = function()
+{
+res = 2^3
+sprintf("2^3 = %d",res)
+}
+```
+
+```r
+Power()
+```
+
+```
+## [1] "2^3 = 8"
+```
+
+Create a new function, Power2(), that allows you to pass any number,x and a, and calculate x^a.
+
+
+```r
+Power2 =function(x,a)
+{
+res = x^a
+sprintf("x^a = %f",res)
+}
+```
+
+```r
+Power2(131,3)
+```
+
+```
+## [1] "x^a = 2248091.000000"
+```
+
+
+```r
+Power3 = function(log="")
+{
+x_axis= 1:10
+y_axis= x_axis^2
+plot(x_axis,y_axis,log= log,xlab="X",ylab="X^2",main="Y=X^2")
+}
+```
+
+```r
+Power3("y")
+```
+
+![](README_figs/README-unnamed-chunk-82-1.png)<!-- -->
+
+Create a function PlotPower(), that allows you to create a plot of x against x^a for a fixed a and for a range of values of x. For instance the function with parameters -->PlotPower(1:10,3).
+
+
+```r
+PlotPower = function(range,power)
+{
+x_axis= range
+y_axis= x_axis^power
+plot(x_axis,y_axis,xlab="X",ylab=paste("X^",as.character(power),sep=""),main=paste("Y=X^",as.character(power),sep=""))
+}
+```
+
+```r
+PlotPower(1:15,3)
+```
+
+![](README_figs/README-unnamed-chunk-84-1.png)<!-- -->
 
