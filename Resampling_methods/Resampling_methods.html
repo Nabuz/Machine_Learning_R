@@ -384,12 +384,12 @@ summary {
 <pre class="r"><code>library(ISLR)
 set.seed(1) #To reproduce the randomness in same way more times
 train= sample(392,196) #We take randomly 196 obs from a dataset with 392 obs (1:392)</code></pre>
-<pre class="r"><code>lm.fit=lm(mpg~horsepower,data=Auto,subset=train) #we fit the linear regr model on training set. Remeber that subset takes an array with indexes</code></pre>
+<pre class="r"><code>lm.fit=lm(mpg~horsepower,data=Auto,subset=train) #we fit the linear regr model on training set. Remember that subset takes an array with indexes</code></pre>
 <pre class="r"><code>prediction_test = predict(lm.fit,Auto[-train,]) #Prediction on complementary of Training set--&gt; Test sets 
 mpg_test = Auto$mpg[-train]  #Values of responce of test set
 mean((mpg_test-prediction_test)^2) #Test error rate (MSE)</code></pre>
 <pre><code>## [1] 26.14142</code></pre>
-<p>Now we calculate the Test Error Rate on with a quadratic and cube polinomio of the features.</p>
+<p>Now we calculate the Test Error Rate on with a quadratic and cube polynomio of the features.</p>
 <pre class="r"><code>lm.fit2 = lm(mpg~poly(horsepower,2),data=Auto,subset=train)
 prediction_test_2 = predict(lm.fit2,Auto[-train,])
 mean((mpg_test-prediction_test_2)^2)</code></pre>
@@ -398,7 +398,7 @@ mean((mpg_test-prediction_test_2)^2)</code></pre>
 prediction_test_3 = predict(lm.fit3,Auto[-train,])
 mean((mpg_test-prediction_test_3)^2)</code></pre>
 <pre><code>## [1] 19.78252</code></pre>
-<p>Now we calculate the Test Error Rate with another random split in Training Set/Test Set</p>
+<p>Now we calculate the Test Error Rate with another random splitting in Training Set/Test Set</p>
 <pre class="r"><code>#For linear Regression
 set.seed(2)
 train= sample(392,196)
@@ -418,15 +418,15 @@ lm.fit3 = lm(mpg~poly(horsepower,3),data=Auto,subset=train)
 prediction_test_3 = predict(lm.fit3,Auto[-train,])
 mean((mpg_test-prediction_test_3)^2)</code></pre>
 <pre><code>## [1] 19.2574</code></pre>
-<p>If we change the random split in Training Set and Test Set and recalculate the Test Error Rate with the different models we can see that quadratic model is better than linear model!!</p>
+<p>If we change the random splitting in Training Set and Test Set and recalculate the Test Error Rate with the different models we can see that quadratic model is better than linear model!!</p>
 <p>MOST IMPORTANT: if we change the random splitting in Training Set/Test Set, there is a variability in Test Error Rate among the models!</p>
 <p>Leave-One-Out Cross-Validation</p>
 <pre class="r"><code>library(boot) # to load cv.glm()
-glm.fit = glm(mpg~horsepower,data=Auto) #if we don&#39;t explicit family= bynomial, we have a linear regression. We need glm() because so we can use cv.glm
+glm.fit = glm(mpg~horsepower,data=Auto) #if we don&#39;t explicit family= binomial, we have a linear regression. We need glm() because so we can use cv.glm
 cv.err = cv.glm(Auto,glm.fit)
-cv.err$delta #delta--&gt;cross-validation results. We have the two value equal (we see a situation where there are different). It represents the mean of all test errors on a single row.</code></pre>
+cv.err$delta #delta--&gt;cross-validation results. We have the two value equal (we see a situation where they are different). It represents the mean of all test errors on a single row.</code></pre>
 <pre><code>## [1] 24.23151 24.23114</code></pre>
-<p>We use LOOCV with more type of polinomial regression</p>
+<p>We use LOOCV with more type of polynomial regression</p>
 <pre class="r"><code>cv.error =rep(0,5)
 for (i in 1:5){ #We use for loop for fit many polynomial model at the same time
 glm.fit=glm(mpg~poly(horsepower,i),data=Auto)
@@ -444,6 +444,91 @@ cv.error.10[i]=cv.glm(Auto,glm.fit,K=10)$delta[1] #We memorize the vector of all
 <pre class="r"><code>cv.error.10  #As before, from linear to quadratic fit there is a good improvement in test MSE. Not so good improvement with high-order polynomials.</code></pre>
 <pre><code>##  [1] 24.20520 19.18924 19.30662 19.33799 18.87911 19.02103 18.89609 19.71201
 ##  [9] 18.95140 19.50196</code></pre>
+<p>THE BOOTSTRAP</p>
+<p>We use bootstrap to estimate the accuracy of a predictive model ad can be applied almost in all situations.</p>
+<p>We perform bootstrap analysis in 2 steps: -Create a function that computes the statistic of interest (alpha.fn) -Use the boot() function to perform the bootstrap by repeatedly sampling obs from the dataset with replacement.</p>
+<p>We use Portfolio dataset (same example in theory).</p>
+<pre class="r"><code>alpha.fn=function(data,index){ #as inpute the dataset and the index of the obs to use to estimate alpha
+X=data$X[index]
+Y=data$Y[index]
+return ((var(Y)-cov (X,Y))/(var(X)+var(Y) -2* cov(X,Y)))
+}</code></pre>
+<pre class="r"><code>#We try the function
+set.seed(1)
+alpha.fn(Portfolio,sample(100,100,replace=T)) #we choose the indexes by taking randomly 100 values,with repetitions, from a range 1-100</code></pre>
+<pre><code>## [1] 0.5963833</code></pre>
+<p>We use boot() function to perform bootstrap analysis: we calculate alpha n times and calculate the standard deviation.</p>
+<pre class="r"><code>library(boot)
+boot(Portfolio,alpha.fn,R=1000)#we calculate alpha 1000 times by taking 1000 times samples with repetition from Portfolio dataset.</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Portfolio, statistic = alpha.fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##      original        bias    std. error
+## t1* 0.5758321 -7.315422e-05  0.08861826</code></pre>
+<p>Where original= estimation of alpha (alpha^), std.error is the std.err(alpha^).</p>
+<p>Estimating the accuracy of the linear Regression Model:</p>
+<p>We can use Bootstrap to calculate the variability of the coefficients/predictions for a statistical learning method.</p>
+<pre class="r"><code>boot.fn=function(data,index) #the function calculate the betas of a simple linear regr
+return(coef(lm(mpg~horsepower,data=data,subset=index))) #we don&#39;t use {} because there is a single line</code></pre>
+<pre class="r"><code>set.seed(1)
+boot.fn(Auto,sample(392,392,replace=T)) #As indexes we take randomly all obs in the Auto dataset with repetation.</code></pre>
+<pre><code>## (Intercept)  horsepower 
+##  38.7387134  -0.1481952</code></pre>
+<pre class="r"><code>boot.fn(Auto,sample(392,392,replace=T))</code></pre>
+<pre><code>## (Intercept)  horsepower 
+##  40.0383086  -0.1596104</code></pre>
+<p>As we can see, the parameters change each time (because we choose indexes randomly).</p>
+<p>Now we use boot() function to compute std.err of 1000 bootstrap and estimated values of betas</p>
+<pre class="r"><code>boot(Auto,boot.fn,1000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Auto, statistic = boot.fn, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##       original      bias    std. error
+## t1* 39.9358610  0.02972191 0.860007896
+## t2* -0.1578447 -0.00030823 0.007404467</code></pre>
+<p>Now we calculate SE(B0^) and SE(B1^) with statistical software</p>
+<pre class="r"><code>summary(lm(mpg~horsepower,data=Auto))$coef</code></pre>
+<pre><code>##               Estimate  Std. Error   t value      Pr(&gt;|t|)
+## (Intercept) 39.9358610 0.717498656  55.65984 1.220362e-187
+## horsepower  -0.1578447 0.006445501 -24.48914  7.031989e-81</code></pre>
+<p>The bootstrap std.err is more accurate with Bootstrap method.</p>
+<p>Now we calculate the std.error for betas for quadratic polynomio.</p>
+<pre class="r"><code>boot.fn_2=function(data,index) 
+return(coef(lm(mpg~poly(horsepower,2),data=data,subset=index))) 
+set.seed(1)
+boot(Auto,boot.fn_2,1000)</code></pre>
+<pre><code>## 
+## ORDINARY NONPARAMETRIC BOOTSTRAP
+## 
+## 
+## Call:
+## boot(data = Auto, statistic = boot.fn_2, R = 1000)
+## 
+## 
+## Bootstrap Statistics :
+##       original      bias    std. error
+## t1*   23.44592 0.003943212   0.2255528
+## t2* -120.13774 0.117312678   3.7008952
+## t3*   44.08953 0.047449584   4.3294215</code></pre>
+<p>Now we calculate std.error with R package…</p>
+<pre class="r"><code>summary(lm(mpg~poly(horsepower,2),data=Auto))$coef</code></pre>
+<pre><code>##                        Estimate Std. Error   t value      Pr(&gt;|t|)
+## (Intercept)            23.44592  0.2209163 106.13030 2.752212e-289
+## poly(horsepower, 2)1 -120.13774  4.3739206 -27.46683  4.169400e-93
+## poly(horsepower, 2)2   44.08953  4.3739206  10.08009  2.196340e-21</code></pre>
+<p>We can see that betas std.err of Bootstrap estimation and R package are very similar. This condition is present because the quadratic model fit very well the data (relation between X and Y).</p>
 
 
 
